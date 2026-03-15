@@ -1,0 +1,229 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.waf{display:flex;flex-direction:column;height:720px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;font-family:var(--font-sans);font-size:14px}
+.waf-tb{display:flex;align-items:center;gap:10px;padding:0 14px;height:46px;min-height:46px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);flex-shrink:0}
+.waf-tb-title{font-size:13px;font-weight:500;color:var(--color-text-primary);white-space:nowrap}
+.waf-tb-st{flex:1;font-size:11px;color:var(--color-text-tertiary);font-family:var(--font-mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.waf-tb-act{display:flex;gap:6px;flex-shrink:0}
+.waf-bd{display:flex;flex:1;overflow:hidden}
+.waf-sb{width:210px;min-width:210px;border-right:0.5px solid var(--color-border-tertiary);display:flex;flex-direction:column;overflow:hidden;background:var(--color-background-secondary)}
+.sb-s{padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary);flex-shrink:0}
+.sb-s input{width:100%;font-size:12px}
+.sb-l{flex:1;overflow-y:auto}
+.ag-h{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;cursor:pointer;border-bottom:0.5px solid var(--color-border-tertiary);font-size:11px;font-weight:500;color:var(--color-text-secondary);user-select:none}
+.ag-h:hover{background:var(--color-background-tertiary)}
+.ag-c{font-weight:400;color:var(--color-text-tertiary)}
+.ag-a{font-size:9px;display:inline-block;transition:transform 0.1s;color:var(--color-text-tertiary)}
+.ag-w.clp{display:none}
+.wi{display:flex;align-items:center;gap:7px;padding:6px 10px 6px 18px;cursor:pointer;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px;color:var(--color-text-primary)}
+.wi:hover{background:var(--color-background-tertiary)}
+.wi.act{background:var(--color-background-info);color:var(--color-text-info)}
+.wi-n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wi-d{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.waf-mn{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px;background:var(--color-background-tertiary)}
+.waf-emp{display:flex;align-items:center;justify-content:center;color:var(--color-text-tertiary);font-size:13px;height:100%}
+.w-hdr{padding:12px 16px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary)}
+.w-big{font-size:24px;font-weight:500;font-family:var(--font-serif);color:var(--color-text-primary);margin-bottom:6px}
+.w-tr{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px}
+.w-b{font-size:12px;padding:2px 8px;border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary)}
+.w-pos{font-size:10px;font-family:var(--font-mono);padding:1px 4px;border-radius:3px;background:var(--color-background-info);color:var(--color-text-info);margin-right:3px}
+.w-ph{font-size:12px;color:var(--color-text-secondary);margin-top:5px;line-height:1.9}
+.ph-w{color:var(--color-text-primary);font-weight:500}
+.prog{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--color-text-secondary)}
+.prog-bar{flex:1;height:3px;border-radius:2px;background:var(--color-border-tertiary);overflow:hidden}
+.prog-fill{height:100%;border-radius:2px;background:#639922;transition:width 0.3s}
+.art-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.art-card{display:flex;flex-direction:column;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;background:var(--color-background-primary)}
+.art-card.apv{border-color:var(--color-border-success)}
+.art-card.rej{border-color:var(--color-border-danger)}
+.art-fr{aspect-ratio:4/3;background:var(--color-background-secondary);overflow:hidden;position:relative;flex-shrink:0}
+.art-fr img{width:100%;height:100%;object-fit:contain;display:block}
+.art-fr-e{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--color-text-tertiary)}
+.src-b{position:absolute;top:6px;right:6px;font-size:10px;font-family:var(--font-mono);padding:2px 5px;border-radius:3px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);opacity:0.9}
+.art-mt{padding:10px 12px;border-top:0.5px solid var(--color-border-tertiary);flex:1}
+.art-ttl{font-size:13px;font-weight:500;line-height:1.4;margin-bottom:3px;color:var(--color-text-primary)}
+.art-sub{font-size:12px;color:var(--color-text-secondary);margin-bottom:3px}
+.art-ctx{font-size:11px;font-family:var(--font-mono);background:var(--color-background-secondary);border-radius:3px;padding:5px 7px;color:var(--color-text-secondary);margin-top:5px;line-height:1.5;word-break:break-word}
+.ctx-f{font-size:10px;color:var(--color-text-tertiary);margin-bottom:2px}
+.art-lnk{display:inline-block;font-size:11px;color:var(--color-text-info);margin-top:4px;text-decoration:none}
+.art-lnk:hover{text-decoration:underline}
+.fb{padding:10px 12px;border-top:0.5px solid var(--color-border-tertiary);display:flex;flex-direction:column;gap:7px}
+.fb-row{display:flex;align-items:flex-start;gap:6px}
+.fb-btn{flex-shrink:0;width:76px;padding:5px 4px;font-size:12px;font-weight:500;cursor:pointer;border-radius:var(--border-radius-md);border:0.5px solid;background:transparent;transition:background 0.1s;text-align:center}
+.fb-ok{border-color:var(--color-border-success);color:var(--color-text-success)}
+.fb-ok:hover,.fb-ok.sel{background:var(--color-background-success)}
+.fb-no{border-color:var(--color-border-danger);color:var(--color-text-danger)}
+.fb-no:hover,.fb-no.sel{background:var(--color-background-danger)}
+.fb-note{flex:1;font-size:12px;padding:5px 7px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);resize:none;min-height:30px;overflow:hidden;font-family:var(--font-sans);line-height:1.4}
+.fb-sub{flex-shrink:0;padding:5px 9px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;background:transparent;color:var(--color-text-secondary);white-space:nowrap}
+.fb-sub:hover{background:var(--color-background-secondary)}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--color-border-secondary);border-radius:2px}
+</style>
+
+<div class="waf" id="waf">
+  <div class="waf-tb">
+    <span class="waf-tb-title">WordArt 标注工具</span>
+    <span class="waf-tb-st" id="tb-st">未加载文件</span>
+    <div class="waf-tb-act">
+      <button onclick="document.getElementById('fi-w').click()">加载词库</button>
+      <button onclick="document.getElementById('fi-a').click()">加载艺术品</button>
+      <button onclick="expFB()">导出反馈</button>
+    </div>
+  </div>
+  <div class="waf-bd">
+    <aside class="waf-sb">
+      <div class="sb-s"><input type="text" id="sb-inp" placeholder="搜索单词…"></div>
+      <div class="sb-l" id="sb-l"><div class="waf-emp" style="height:80px;font-size:12px">请加载词库文件</div></div>
+    </aside>
+    <div class="waf-mn" id="waf-mn"><div class="waf-emp">← 从左侧选择单词开始标注</div></div>
+  </div>
+</div>
+<input type="file" id="fi-w" accept=".json" style="display:none">
+<input type="file" id="fi-a" accept=".json" style="display:none">
+
+<script>
+let W={},A={},FB={},CW=null,SQ='';
+const LS='waf_fb2';
+function sid(s){return String(s).replace(/[^a-zA-Z0-9]/g,'_')}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function loadFB(){try{FB=JSON.parse(localStorage.getItem(LS)||'{}');}catch{FB={};}}
+function saveFB(){localStorage.setItem(LS,JSON.stringify(FB));}
+function fbK(w,id){return w+'||'+id}
+function setFB(w,id,status,note){FB[fbK(w,id)]={word:w,id,status,note:note||'',ts:new Date().toISOString()};saveFB();}
+function gFB(w,id){return FB[fbK(w,id)]||null}
+function wStat(word){
+  const ae=A[word];
+  if(!ae?.artworks?.length) return 'empty';
+  const t=ae.artworks.length,d=ae.artworks.filter(a=>gFB(word,a.id)).length;
+  return d===0?'none':d<t?'partial':'complete';
+}
+function dotC(s){return{none:'var(--color-border-secondary)',partial:'#EF9F27',complete:'#639922',empty:'var(--color-border-tertiary)'}[s]}
+function readJSON(file,cb){const r=new FileReader();r.onload=e=>{try{cb(JSON.parse(e.target.result));}catch(err){alert('JSON解析失败: '+err.message);}};r.readAsText(file);}
+function loadW(file){readJSON(file,data=>{W={};(Array.isArray(data)?data:[]).forEach(w=>{W[w.word]=w;});if(!Array.isArray(data)){Object.keys(data).forEach(k=>{W[k]=data[k];});}updSt();renderSB();});}
+function loadA(file){readJSON(file,data=>{A=data;updSt();renderSB();if(CW)renderMain(CW);});}
+function updSt(){const wc=Object.keys(W).length,ac=Object.keys(A).length;document.getElementById('tb-st').textContent=(wc?`词库 ${wc} 词`:'词库未加载')+' | '+(ac?`艺术品 ${ac} 词`:'艺术品未加载');}
+function renderSB(){
+  const words=Object.keys(W).sort(),q=SQ.toLowerCase().trim();
+  const filtered=q?words.filter(w=>w.toLowerCase().includes(q)):words;
+  if(!words.length){document.getElementById('sb-l').innerHTML='<div class="waf-emp" style="height:80px;font-size:12px">请加载词库文件</div>';return;}
+  const groups={};
+  filtered.forEach(w=>{const l=w[0].toUpperCase();if(!groups[l])groups[l]=[];groups[l].push(w);});
+  let html='';
+  Object.keys(groups).sort().forEach(letter=>{
+    const ws=groups[letter],open=CW&&ws.includes(CW);
+    html+=`<div><div class="ag-h" onclick="var nxt=this.nextElementSibling,arr=this.querySelector('.ag-a');nxt.classList.toggle('clp');arr.style.transform=nxt.classList.contains('clp')?'':'rotate(90deg)'">
+      <span>${letter}</span><span><span class="ag-c">${ws.length}</span> <span class="ag-a" style="${open?'transform:rotate(90deg)':''}">▶</span></span>
+    </div>
+    <div class="ag-w ${open?'':'clp'}">${ws.map(w=>`<div class="wi ${CW===w?'act':''}" data-word="${esc(w)}">${esc(w)}<span class="wi-n" style="display:none"></span><span class="wi-d" style="background:${dotC(wStat(w))}"></span></div>`).join('')}</div></div>`;
+  });
+  document.getElementById('sb-l').innerHTML=html;
+  document.querySelectorAll('.wi').forEach(el=>{
+    el.querySelector('.wi-n').style.display='none';
+    el.addEventListener('click',()=>selWord(el.dataset.word));
+  });
+}
+function updDot(word){document.querySelectorAll('.wi').forEach(el=>{if(el.dataset.word===word){const d=el.querySelector('.wi-d');if(d)d.style.background=dotC(wStat(word));if(CW===word)el.classList.add('act');else el.classList.remove('act');}});}
+function selWord(word){
+  CW=word;
+  document.querySelectorAll('.wi').forEach(el=>el.classList.toggle('act',el.dataset.word===word));
+  renderMain(word);
+}
+function renderMain(word){
+  const mn=document.getElementById('waf-mn');
+  const wd=W[word]||{},ae=A[word],arts=ae?.artworks||[];
+  const total=arts.length,done=arts.filter(a=>gFB(word,a.id)).length;
+  const pct=total>0?Math.round(done/total*100):0;
+  const wid=sid(word);
+  let tH=(wd.translations||[]).map(t=>`<span class="w-b"><span class="w-pos">${esc(t.type)}</span>${esc(t.translation)}</span>`).join('');
+  let pH=wd.phrases?.length?`<div class="w-ph">${wd.phrases.map(p=>`<span style="margin-right:14px"><span class="ph-w">${esc(p.phrase)}</span> — ${esc(p.translation)}</span>`).join('')}</div>`:'';
+  let gH=arts.length===0
+    ?`<div style="text-align:center;padding:24px;color:var(--color-text-tertiary);font-size:13px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary)">该单词暂无艺术品数据</div>`
+    :`<div class="art-grid">${arts.map(a=>renderCard(word,a)).join('')}</div>`;
+  mn.innerHTML=`<div class="w-hdr"><div class="w-big">${esc(word)}</div><div class="w-tr">${tH}</div>${pH}</div>
+  <div class="prog"><span id="pt-${wid}">${done}/${total} 已标注</span><div class="prog-bar"><div class="prog-fill" id="pf-${wid}" style="width:${pct}%"></div></div><span id="pp-${wid}">${pct}%</span></div>
+  ${gH}`;
+  mn.querySelectorAll('.fb-btn,.fb-sub').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const card=btn.closest('.art-card');
+      const w=card.dataset.word,id=card.dataset.id,csid=card.dataset.sid;
+      const status=btn.dataset.status;
+      if(btn.classList.contains('fb-sub')){
+        const noteEl=card.querySelector(`.fb-note[data-status="${status}"]`);
+        setFB(w,id,status,noteEl?.value||'');
+        btn.textContent='✓';setTimeout(()=>btn.textContent='提交',1200);
+      } else {
+        setFB(w,id,status,'');
+      }
+      updCard(w,id,csid,status);
+    });
+  });
+  mn.querySelectorAll('.fb-note').forEach(ta=>{ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,80)+'px';});});
+}
+function renderCard(word,a){
+  const fb=gFB(word,a.id),csid=sid(a.id);
+  const sc=fb?(fb.status==='approved'?'apv':'rej'):'';
+  const okS=fb?.status==='approved'?'sel':'',noS=fb?.status==='rejected'?'sel':'';
+  const okN=fb?.status==='approved'?esc(fb.note||''):'',noN=fb?.status==='rejected'?esc(fb.note||''):'';
+  const imgH=a.image_url?`<img src="${esc(a.image_url)}" alt="${esc(a.title)}" loading="lazy" onerror="this.outerHTML='<div class=art-fr-e>图片加载失败</div>'">`:'<div class="art-fr-e">无图片</div>';
+  const ctx=a.match_context;
+  const ctxH=ctx?`<div class="art-ctx"><div class="ctx-f">${esc(ctx.field)}</div>${esc(ctx.excerpt)}</div>`:'';
+  const sub=[a.artist,a.year,a.culture].filter(Boolean).join(' · ');
+  return `<div class="art-card ${sc}" data-word="${esc(word)}" data-id="${esc(a.id)}" data-sid="${csid}">
+    <div class="art-fr">${imgH}<span class="src-b">${esc(a.source)}</span></div>
+    <div class="art-mt">
+      <div class="art-ttl">${esc(a.title||'（无标题）')}</div>
+      ${sub?`<div class="art-sub">${esc(sub)}</div>`:''}
+      ${ctxH}
+      ${a.page_url?`<a class="art-lnk" href="${esc(a.page_url)}" target="_blank">查看原页面 ↗</a>`:''}
+    </div>
+    <div class="fb">
+      <div class="fb-row">
+        <button class="fb-btn fb-ok ${okS}" data-status="approved">✓ 合格</button>
+        <textarea class="fb-note" data-status="approved" placeholder="合格说明（可选）…">${okN}</textarea>
+        <button class="fb-sub" data-status="approved">提交</button>
+      </div>
+      <div class="fb-row">
+        <button class="fb-btn fb-no ${noS}" data-status="rejected">✗ 不合格</button>
+        <textarea class="fb-note" data-status="rejected" placeholder="不合格说明…">${noN}</textarea>
+        <button class="fb-sub" data-status="rejected">提交</button>
+      </div>
+    </div>
+  </div>`;
+}
+function updCard(w,id,csid,status){
+  const card=document.querySelector(`.art-card[data-id="${CSS.escape(id)}"]`);
+  if(card){
+    card.className=`art-card ${status==='approved'?'apv':'rej'}`;
+    card.querySelector('.fb-ok').classList.toggle('sel',status==='approved');
+    card.querySelector('.fb-no').classList.toggle('sel',status==='rejected');
+  }
+  updProg(w);updDot(w);
+}
+function updProg(word){
+  const ae=A[word];if(!ae?.artworks)return;
+  const t=ae.artworks.length,d=ae.artworks.filter(a=>gFB(word,a.id)).length;
+  const pct=t>0?Math.round(d/t*100):0,wid=sid(word);
+  const pf=document.getElementById('pf-'+wid),pt=document.getElementById('pt-'+wid),pp=document.getElementById('pp-'+wid);
+  if(pf)pf.style.width=pct+'%';if(pt)pt.textContent=`${d}/${t} 已标注`;if(pp)pp.textContent=pct+'%';
+}
+function expFB(){
+  const approved=[],rejected=[],rejIds=[];
+  Object.values(FB).forEach(f=>{
+    if(!f.status)return;
+    const art=A[f.word]?.artworks?.find(a=>a.id===f.id);
+    const e={word:f.word,artwork_id:f.id,title:art?.title||'',source:art?.source||'',image_url:art?.image_url||'',page_url:art?.page_url||'',note:f.note||'',timestamp:f.ts};
+    if(f.status==='approved')approved.push(e);
+    else{rejected.push(e);rejIds.push(f.id);}
+  });
+  const out={exported_at:new Date().toISOString(),stats:{approved:approved.length,rejected:rejected.length,total:approved.length+rejected.length},approved,rejected,rejected_ids:rejIds};
+  const b=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');
+  a.href=u;a.download=`wordart_feedback_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(u);
+}
+loadFB();
+document.getElementById('fi-w').addEventListener('change',e=>{if(e.target.files[0])loadW(e.target.files[0]);});
+document.getElementById('fi-a').addEventListener('change',e=>{if(e.target.files[0])loadA(e.target.files[0]);});
+document.getElementById('sb-inp').addEventListener('input',e=>{SQ=e.target.value;renderSB();});
+</script>
