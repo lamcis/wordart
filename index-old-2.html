@@ -126,79 +126,6 @@ button{cursor:pointer}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
-#main-empty-mobile{display:none}
-
-/* ── Mobile ──────────────────────────────── */
-#sb-toggle{display:none}
-@media(max-width:700px){
-  #main-empty{display:none}
-#main-empty-mobile{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;color:var(--tx3);font-size:13px;line-height:2;flex:1;min-height:200px}
-  body{font-size:13px}
-  /* 工具栏精简 */
-  #tb{padding:0 10px;gap:6px;height:50px}
-  #tb-brand{font-size:14px}
-  #tb-st{display:none}
-  .btn{padding:6px 9px;font-size:12px}
-  /* 侧边栏变底部抽屉 */
-  #sb-toggle{
-    display:flex;align-items:center;justify-content:center;
-    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-    z-index:100;background:var(--tx);color:var(--surface);
-    border:none;border-radius:24px;padding:10px 20px;font-size:13px;
-    box-shadow:0 4px 16px rgba(0,0,0,.18);white-space:nowrap;gap:6px;
-  }
-  #sb{
-    position:fixed;bottom:0;left:0;right:0;top:auto;
-    width:100%;max-height:60vh;z-index:99;
-    border-right:none;border-top:1px solid var(--bd);
-    border-radius:16px 16px 0 0;
-    transform:translateY(100%);transition:transform .25s ease;
-    box-shadow:0 -4px 24px rgba(0,0,0,.12);
-  }
-  #sb.open{transform:translateY(0)}
-  #sb-search{padding:10px;border-radius:16px 16px 0 0}
-  /* 遮罩 */
-  #sb-mask{
-    display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:98;
-  }
-  #sb-mask.show{display:block}
-  /* 主区域全宽 */
-  #layout{flex-direction:column}
-  #main{flex:1;padding-bottom:80px}
-  /* 单词头部更紧凑 */
-  #w-hdr{padding:10px 12px}
-  #w-big{font-size:22px}
-  /* 来源按钮换行 */
-  #src-ctrl{padding:6px 12px;gap:5px}
-  .src-grp{flex-wrap:wrap;gap:4px}
-  .src-btn{padding:5px 8px;font-size:11px}
-  /* 状态行 */
-  #src-status{padding:4px 12px;gap:8px}
-  /* 筛选栏 */
-  #filter-bar{padding:6px 12px}
-  /* 图片单列 */
-  .art-grid{grid-template-columns:1fr;gap:10px}
-  #art-area{padding:10px 10px 80px}
-  /* 卡片图片高度适配 */
-  .art-img-wr{aspect-ratio:16/10}
-  /* 反馈按钮更易点击 */
-  .fb-act{width:70px;padding:7px 3px;font-size:12px}
-  .fb-sub{padding:7px 10px;font-size:12px}
-  .fb-txt{font-size:12px;padding:6px 7px}
-  .art-fb{padding:8px 10px;gap:7px}
-  /* 设置面板 */
-  #settings-panel{padding:10px 12px}
-  .sp-row{flex-direction:column;gap:5px}
-  .sp-label{width:auto;padding-top:0;font-weight:600}
-  .sp-inp{width:100%}
-  /* 手动添加框 */
-  .manual-add-box{flex-direction:column}
-  .manual-add-box input{width:100%!important}
-}
-@media(max-width:400px){
-  #w-big{font-size:20px}
-  .src-btn{padding:4px 6px;font-size:10px}
-}
 </style>
 </head>
 <body>
@@ -247,17 +174,12 @@ button{cursor:pointer}
   </div>
 </div>
 
-<button id="sb-toggle" onclick="toggleSB()">☰ 选择单词 <span id="sb-cur-word"></span></button>
-<div id="sb-mask" onclick="closeSB()"></div>
 <div id="layout">
   <aside id="sb">
     <div id="sb-search"><input type="text" id="sb-inp" placeholder="搜索单词…"></div>
     <div id="sb-list"><div class="sb-empty">加载 JSON 或 TXT<br>单词文件即可开始</div></div>
   </aside>
-  <div id="main">
-  <div id="main-empty">从上方"加载单词"选择 TXT 或 JSON 文件⬆ <br><br>← 从左侧选择单词开始</div>
-  <div id="main-empty-mobile">⬆ 从上方"加载单词"选择 TXT 或 JSON 文件<br><br>⬇ 从下方选择单词开始</div>
-</div>
+  <div id="main"><div id="main-empty">← 从左侧选择单词开始</div></div>
 </div>
 
 <input type="file" id="fi-words" accept=".json,.txt" style="display:none">
@@ -881,9 +803,7 @@ async function selWord(word){
     });
   }
   renderMain(word);
-  closeSB();
-  const cur=document.getElementById("sb-cur-word");if(cur)cur.textContent=" · "+word;
-  [...AS].forEach(src=>searchAndAppend(word,src,MAX));
+  Promise.all([...AS].map(src=>searchAndAppend(word,src,MAX)));
 }
 async function searchAndAppend(word,src,count){
   const fetcher=FETCHERS[src];
@@ -932,7 +852,7 @@ async function reloadWord(word){
       match_context:null,note:'从反馈恢复'},status:'approved'});
   });
   renderMain(word);
-  [...AS].forEach(src=>searchAndAppend(word,src,MAX));
+  Promise.all([...AS].map(src=>searchAndAppend(word,src,MAX)));
 }
 
 // ═══ FILE I/O ════════════════════════════════════════
@@ -953,7 +873,7 @@ function loadWordFile(file){
       }catch{alert('JSON解析失败');}
     }
     CARDS={};POOL={};SSTATUS={};updSt();renderSB();
-    document.getElementById('main').innerHTML='<div id="main-empty">← 从左侧选择单词开始</div><div id="main-empty-mobile">⬆ 从上方"加载单词"选择 TXT 或 JSON 文件<br><br>⬇ 从下方选择单词开始</div>';
+    document.getElementById('main').innerHTML='<div id="main-empty">← 从左侧选择单词开始</div>';
     CW=null;
   });
 }
@@ -995,16 +915,6 @@ function exportFB(){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));
   a.download=`wordart_feedback_${new Date().toISOString().slice(0,10)}.json`;a.click();
-}
-
-// ═══ MOBILE SIDEBAR ══════════════════════════════════
-function toggleSB(){
-  document.getElementById('sb').classList.toggle('open');
-  document.getElementById('sb-mask').classList.toggle('show');
-}
-function closeSB(){
-  document.getElementById('sb').classList.remove('open');
-  document.getElementById('sb-mask').classList.remove('show');
 }
 
 // ═══ INIT ════════════════════════════════════════════
