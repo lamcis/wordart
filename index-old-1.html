@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
+<meta name="referrer" content="no-referrer">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="referrer" content="no-referrer">
 <title>WordArt 标注工具</title>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
@@ -21,24 +21,38 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;height:100vh;overflow:hidden;display:flex;flex-direction:column}
 input,textarea,button,select{font-family:inherit}
 button{cursor:pointer}
+
+/* ── Toolbar ─────────────────────────────── */
 #tb{display:flex;align-items:center;gap:8px;padding:0 12px;height:46px;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--bd);z-index:10}
 #tb-brand{font-size:15px;font-weight:600;letter-spacing:-.02em;flex-shrink:0}
 #tb-brand span{font-weight:300;color:var(--tx3)}
 #tb-st{flex:1;font-size:11px;color:var(--tx3);font-family:'JetBrains Mono',monospace;padding:0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .btn{padding:5px 10px;font-size:12px;border:1px solid var(--bd2);border-radius:var(--r);background:var(--surface);color:var(--tx2);white-space:nowrap;transition:background .1s}
 .btn:hover{background:var(--surface2)}
+.btn-icon{padding:5px 8px;font-size:14px}
+
+/* ── Warning banner ──────────────────────── */
 #warn-banner{display:none;align-items:center;gap:10px;padding:7px 14px;background:var(--warn-bg);border-bottom:1px solid var(--warn-bd);font-size:12px;color:var(--warn);flex-shrink:0}
-.warn-close{margin-left:auto;background:none;border:none;color:var(--warn);font-size:16px;line-height:1;padding:0 2px;cursor:pointer}
+#warn-banner a{color:var(--warn);font-weight:500}
+.warn-close{margin-left:auto;background:none;border:none;color:var(--warn);font-size:16px;line-height:1;padding:0 2px;cursor:pointer;opacity:.7}
+.warn-close:hover{opacity:1}
+
+/* ── Settings panel ─────────────────────── */
 #settings-panel{display:none;padding:14px 16px;background:var(--surface2);border-bottom:1px solid var(--bd);flex-shrink:0}
 .sp-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
 .sp-row:last-child{margin-bottom:0}
-.sp-label{font-size:12px;font-weight:500;color:var(--tx2);flex-shrink:0;padding-top:6px;width:130px}
+.sp-label{font-size:12px;font-weight:500;color:var(--tx2);flex-shrink:0;padding-top:6px;width:120px}
 .sp-inp{flex:1;font-size:12px;padding:5px 8px;border:1px solid var(--bd);border-radius:var(--r);background:var(--surface);color:var(--tx)}
 .sp-inp:focus{outline:none;border-color:var(--bd2)}
-.sp-desc{font-size:11px;color:var(--tx3);line-height:1.7;padding-top:4px}
-.sp-desc a{color:var(--info)}
-.sp-examples{margin-top:3px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tx3)}
+.sp-desc{font-size:11px;color:var(--tx3);line-height:1.7;padding-top:6px}
+.sp-examples{margin-top:4px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tx3)}
+.sp-save{padding:5px 14px;font-size:12px;border:1px solid var(--bd2);border-radius:var(--r);background:var(--surface);color:var(--tx2)}
+.sp-save:hover{background:var(--ok-bg);border-color:var(--ok-bd);color:var(--ok)}
+
+/* ── Layout ──────────────────────────────── */
 #layout{display:flex;flex:1;overflow:hidden}
+
+/* ── Sidebar ─────────────────────────────── */
 #sb{width:210px;min-width:210px;display:flex;flex-direction:column;border-right:1px solid var(--bd);background:var(--surface);overflow:hidden}
 #sb-search{padding:8px;border-bottom:1px solid var(--bd);flex-shrink:0}
 #sb-search input{width:100%;padding:5px 8px;font-size:12px;border:1px solid var(--bd);border-radius:var(--r);background:var(--surface2);color:var(--tx)}
@@ -55,9 +69,13 @@ button{cursor:pointer}
 .wi-nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wi-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .sb-empty{padding:24px 12px;text-align:center;font-size:12px;color:var(--tx3);line-height:1.8}
+
+/* ── Main ────────────────────────────────── */
 #main{flex:1;display:flex;flex-direction:column;overflow-y:auto}
-#main-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--tx3);font-size:13px;min-height:200px}
-#w-hdr{padding:12px 16px;border-bottom:1px solid var(--bd);background:var(--surface)}
+#main-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--tx3);font-size:13px}
+
+/* ── Word header ─────────────────────────── */
+#w-hdr{padding:12px 16px;border-bottom:1px solid var(--bd);background:var(--surface);flex-shrink:0}
 #w-big{font-size:28px;font-family:'EB Garamond',Georgia,serif;font-weight:400;letter-spacing:-.01em;color:var(--tx);margin-bottom:6px;line-height:1}
 #w-transl{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px}
 .w-tag{font-size:12px;padding:2px 8px;border-radius:var(--r);background:var(--surface2);color:var(--tx2);border:1px solid var(--bd)}
@@ -68,22 +86,31 @@ button{cursor:pointer}
 .prog-bar{flex:1;height:2px;background:var(--bd);border-radius:2px;overflow:hidden}
 .prog-fill{height:100%;background:var(--ok);border-radius:2px;transition:width .3s}
 .prog-txt{font-size:11px;color:var(--tx3);white-space:nowrap}
-#src-ctrl{display:flex;align-items:center;gap:6px;padding:8px 16px;border-bottom:1px solid var(--bd);background:var(--surface);flex-wrap:wrap}
+
+/* ── Source controls ─────────────────────── */
+#src-ctrl{display:flex;align-items:center;gap:6px;padding:8px 16px;border-bottom:1px solid var(--bd);background:var(--surface);flex-shrink:0;flex-wrap:wrap}
 .src-lbl{font-size:11px;color:var(--tx3);flex-shrink:0}
-.src-grp{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
-.src-btn{padding:3px 9px;font-size:11px;border:1px solid var(--bd);border-radius:var(--r);background:var(--surface2);color:var(--tx2);transition:all .1s;font-family:'JetBrains Mono',monospace}
+.src-grp{display:flex;align-items:center;gap:4px}
+.src-btn{padding:3px 9px;font-size:11px;border:1px solid var(--bd);border-radius:var(--r);background:var(--surface2);color:var(--tx2);transition:all .1s;font-family:'JetBrains Mono',monospace;cursor:pointer}
 .src-btn.on{background:var(--tx);color:var(--surface);border-color:var(--tx)}
-.src-btn.ext{border-style:dashed;color:var(--info)}
 .src-sep{flex:1}
-#src-status{display:none;align-items:center;gap:14px;padding:5px 16px;background:#faf9f7;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+.src-reload{font-size:11px}
+
+/* ── Source status row ───────────────────── */
+#src-status{display:none;align-items:center;gap:14px;padding:5px 16px;background:#faf9f7;border-bottom:1px solid var(--bd);flex-shrink:0;flex-wrap:wrap}
 .sst-item{display:flex;align-items:center;gap:5px;font-size:11px}
 .sst-name{font-family:'JetBrains Mono',monospace;color:var(--tx3)}
-.spin{display:inline-block;width:10px;height:10px;border:1.5px solid var(--bd);border-top-color:var(--tx3);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:2px}
-@keyframes spin{to{transform:rotate(360deg)}}
+.sst-val{font-size:11px}
+.sst-searching{color:var(--tx3)}
 .sst-ok{color:var(--ok)}
 .sst-zero{color:var(--tx3)}
-.sst-err{color:var(--no)}
-#filter-bar{display:flex;align-items:center;gap:8px;padding:6px 16px;border-bottom:1px solid var(--bd);background:var(--surface);flex-wrap:wrap}
+.sst-err{color:var(--no);cursor:default}
+.sst-idle{color:var(--bd2)}
+.spin{display:inline-block;width:10px;height:10px;border:1.5px solid var(--bd);border-top-color:var(--tx3);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Filter bar ──────────────────────────── */
+#filter-bar{display:none;align-items:center;gap:8px;padding:6px 16px;border-bottom:1px solid var(--bd);background:var(--surface);flex-shrink:0;flex-wrap:wrap}
 .flt-lbl{font-size:11px;color:var(--tx3);flex-shrink:0}
 .flt-chip{padding:2px 8px;font-size:11px;border:1px solid var(--bd);border-radius:20px;background:var(--surface2);color:var(--tx2);cursor:pointer;transition:all .1s;white-space:nowrap}
 .flt-chip:hover{background:var(--surface3)}
@@ -93,9 +120,15 @@ button{cursor:pointer}
 .flt-tag-del{background:none;border:none;color:var(--tx3);font-size:13px;line-height:1;padding:0;cursor:pointer}
 .flt-tag-del:hover{color:var(--no)}
 .flt-add{display:flex;align-items:center;gap:4px}
-.flt-add input{padding:2px 7px;font-size:11px;border:1px solid var(--bd);border-radius:20px;background:var(--surface2);color:var(--tx);width:90px}
+.flt-add input{padding:2px 7px;font-size:11px;border:1px solid var(--bd);border-radius:20px;background:var(--surface2);color:var(--tx);width:80px}
 .flt-add input:focus{outline:none;border-color:var(--bd2)}
-.flt-add button{padding:2px 8px;font-size:11px;border:1px solid var(--bd2);border-radius:20px;background:transparent;color:var(--tx2)}
+.flt-add button{padding:2px 7px;font-size:11px;border:1px solid var(--bd2);border-radius:20px;background:transparent;color:var(--tx2)}
+.flt-add button:hover{background:var(--surface2)}
+.flt-toggle{font-size:11px;color:var(--info);cursor:pointer;margin-left:auto;flex-shrink:0;background:none;border:none;padding:2px}
+.flt-toggle:hover{text-decoration:underline}
+
+/* ── Art grid area ───────────────────────── */
+/*#art-area{flex:1;overflow-y:auto;padding:14px 16px}*/
 #art-area{padding:14px 16px 32px}
 .art-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
 .art-card{display:flex;flex-direction:column;border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden;background:var(--surface);transition:border-color .2s}
@@ -121,8 +154,9 @@ button{cursor:pointer}
 .fb-txt:focus{outline:none;border-color:var(--bd2)}
 .fb-sub{flex-shrink:0;padding:5px 8px;font-size:11px;border:1px solid var(--bd);border-radius:var(--r);background:transparent;color:var(--tx2);white-space:nowrap}
 .fb-sub:hover{background:var(--surface2)}
-.no-art{padding:32px 24px;text-align:center;font-size:13px;color:var(--tx3);border:1px dashed var(--bd);border-radius:var(--rl);line-height:2.2}
-.manual-add-box{padding:10px 12px;border:1px solid var(--bd);border-radius:var(--rl);background:var(--surface);margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.no-art{padding:32px 24px;text-align:center;font-size:13px;color:var(--tx3);border:1px dashed var(--bd);border-radius:var(--rl);line-height:2}
+
+/* ── Scrollbar ───────────────────────────── */
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
@@ -130,50 +164,55 @@ button{cursor:pointer}
 </head>
 <body>
 
+<!-- Toolbar -->
 <header id="tb">
   <div id="tb-brand">WordArt <span>标注工具</span></div>
   <div id="tb-st">请加载单词文件</div>
   <button class="btn" onclick="document.getElementById('fi-words').click()">加载单词</button>
   <button class="btn" onclick="document.getElementById('fi-fb').click()">加载反馈</button>
   <button class="btn" onclick="exportFB()">导出反馈</button>
-  <button class="btn" onclick="toggleSettings()" title="设置">⚙</button>
+  <button class="btn btn-icon" onclick="toggleSettings()" title="设置">⚙</button>
 </header>
 
+<!-- File protocol warning -->
 <div id="warn-banner">
-  <span>⚠ 以 <code>file://</code> 方式打开，浏览器会拦截所有跨域请求，图片无法搜索。请用 <strong>npm run dev</strong> 启动后访问 <a href="http://localhost:5173" target="_blank">http://localhost:5173</a>，或部署到 GitHub Pages / Netlify。</span>
+  <span>⚠ 当前以 <code>file://</code> 方式打开，浏览器会拦截所有跨域 API 请求，图片将无法搜索到。</span>
+  <span>请通过本地服务器打开：<strong>npm run dev</strong>，然后访问 <a href="http://localhost:5173" target="_blank">http://localhost:5173</a></span>
   <button class="warn-close" onclick="document.getElementById('warn-banner').style.display='none'">×</button>
 </div>
 
+<!-- Settings panel -->
 <div id="settings-panel">
   <div class="sp-row">
     <div class="sp-label">CORS 代理前缀</div>
     <div style="flex:1">
-      <input class="sp-inp" id="sp-proxy" placeholder="留空直连（Archive、WikiArt 需要代理才能搜索）">
-      <div class="sp-desc">Archive.org 和 WikiArt 的 API 有 CORS 限制，需配置代理。
+      <input class="sp-inp" id="sp-proxy" placeholder="留空则直连（Met、Wikimedia 直连可用；Archive、WikiArt 需要代理）">
+      <div class="sp-desc">Archive.org 和 WikiArt 的 API 不允许浏览器直接调用（CORS限制）。配置代理后可解决。
         <div class="sp-examples">
-          https://corsproxy.io/?url=<br>
-          http://localhost:3001/proxy?url=（自建 Node 代理）
+          免费代理示例：https://corsproxy.io/?url=<br>
+          另一个选项：https://api.allorigins.win/raw?url=<br>
+          自建Node代理：http://localhost:3001/proxy?url=
         </div>
       </div>
     </div>
   </div>
   <div class="sp-row">
     <div class="sp-label">需要代理的来源</div>
-    <div style="display:flex;gap:12px;padding-top:6px;flex-wrap:wrap">
+    <div style="display:flex;gap:8px;padding-top:6px">
       <label style="font-size:12px"><input type="checkbox" id="sp-proxy-archive" checked> Archive</label>
       <label style="font-size:12px"><input type="checkbox" id="sp-proxy-wikiart" checked> WikiArt</label>
       <label style="font-size:12px"><input type="checkbox" id="sp-proxy-wiki"> Wikimedia</label>
       <label style="font-size:12px"><input type="checkbox" id="sp-proxy-met"> Met</label>
-      <label style="font-size:12px"><input type="checkbox" id="sp-proxy-rijks"> Rijksmuseum</label>
     </div>
   </div>
   <div class="sp-row">
     <div class="sp-label"></div>
-    <button class="btn" onclick="saveSettings()">保存设置</button>
-    <span id="sp-saved" style="font-size:12px;color:var(--ok);display:none;margin-left:8px;padding-top:6px">✓ 已保存</span>
+    <button class="sp-save btn" onclick="saveSettings()">保存设置</button>
+    <span id="sp-saved" style="font-size:12px;color:var(--ok);display:none;margin-left:8px;padding-top:6px">已保存</span>
   </div>
 </div>
 
+<!-- Layout -->
 <div id="layout">
   <aside id="sb">
     <div id="sb-search"><input type="text" id="sb-inp" placeholder="搜索单词…"></div>
@@ -187,19 +226,33 @@ button{cursor:pointer}
 
 <script>
 // ═══ STATE ════════════════════════════════════════════
-let W={},FB={},CW=null,SQ='';
-let CARDS={},POOL={},SSTATUS={};
-let PROXY='',PROXY_SRCS=new Set(['archive','wikiart']);
-const AS=new Set(['met','wiki','archive','rijks']);
-const SRC_LABELS={met:'Met',wiki:'Wikimedia',archive:'Archive',rijks:'Rijksmuseum',wikiart:'WikiArt'};
-let FILTER_TYPES=new Set(),FILTER_TAGS=[];
-const TYPE_OPTS=[
-  {key:'painting',label:'绘画'},{key:'photo',label:'照片'},
-  {key:'drawing',label:'素描'},{key:'sculpture',label:'雕塑'},
-  {key:'poster',label:'海报'},{key:'print',label:'版画'},
+let W = {}, FB = {}, CW = null, SQ = '';
+let CARDS = {};   // word → [{art, status}]
+let POOL = {};    // 'word:src' → pool state
+let SSTATUS = {}; // 'word:src' → {state,found,total,error}
+
+// Settings
+let PROXY = '';
+let PROXY_SRCS = new Set(['archive','wikiart']);
+
+// Active sources
+const AS = new Set(['met','wiki','archive','wikiart']);
+const SRC_LABELS = {met:'Met',wiki:'Wikimedia',archive:'Archive',wikiart:'WikiArt'};
+
+// Filters
+let FILTER_TYPES = new Set(); // empty = all
+let FILTER_TAGS = [];
+const TYPE_OPTS = [
+  {key:'painting', label:'绘画'},
+  {key:'photo', label:'照片'},
+  {key:'drawing', label:'素描'},
+  {key:'sculpture', label:'雕塑'},
+  {key:'poster', label:'海报'},
+  {key:'print', label:'版画'},
 ];
-const LS_FB='waf5_fb',LS_SET='waf5_settings',LS_FLT='waf5_filters';
-const MAX=2;
+
+const LS_FB = 'waf4_fb', LS_SETTINGS = 'waf4_settings', LS_FILTERS = 'waf4_filters';
+const MAX = 2;
 
 // ═══ PERSISTENCE ══════════════════════════════════════
 function loadFBLocal(){try{FB=JSON.parse(localStorage.getItem(LS_FB)||'{}');}catch{FB={}}}
@@ -213,45 +266,47 @@ function getFB(w,id){return FB[fbKey(w,id)]||null}
 
 function loadSettings(){
   try{
-    const s=JSON.parse(localStorage.getItem(LS_SET)||'{}');
+    const s=JSON.parse(localStorage.getItem(LS_SETTINGS)||'{}');
     PROXY=s.proxy||'';
     PROXY_SRCS=new Set(s.proxySrcs||['archive','wikiart']);
     document.getElementById('sp-proxy').value=PROXY;
-    ['archive','wikiart','wiki','met','rijks'].forEach(k=>{
-      const el=document.getElementById('sp-proxy-'+k);
-      if(el)el.checked=PROXY_SRCS.has(k);
-    });
+    document.getElementById('sp-proxy-archive').checked=PROXY_SRCS.has('archive');
+    document.getElementById('sp-proxy-wikiart').checked=PROXY_SRCS.has('wikiart');
+    document.getElementById('sp-proxy-wiki').checked=PROXY_SRCS.has('wiki');
+    document.getElementById('sp-proxy-met').checked=PROXY_SRCS.has('met');
   }catch{}
 }
 function saveSettings(){
   PROXY=document.getElementById('sp-proxy').value.trim();
   PROXY_SRCS=new Set();
-  ['archive','wikiart','wiki','met','rijks'].forEach(k=>{
-    if(document.getElementById('sp-proxy-'+k)?.checked)PROXY_SRCS.add(k);
-  });
-  localStorage.setItem(LS_SET,JSON.stringify({proxy:PROXY,proxySrcs:[...PROXY_SRCS]}));
-  const sv=document.getElementById('sp-saved');
-  sv.style.display='inline';setTimeout(()=>sv.style.display='none',2000);
+  if(document.getElementById('sp-proxy-archive').checked)PROXY_SRCS.add('archive');
+  if(document.getElementById('sp-proxy-wikiart').checked)PROXY_SRCS.add('wikiart');
+  if(document.getElementById('sp-proxy-wiki').checked)PROXY_SRCS.add('wiki');
+  if(document.getElementById('sp-proxy-met').checked)PROXY_SRCS.add('met');
+  localStorage.setItem(LS_SETTINGS,JSON.stringify({proxy:PROXY,proxySrcs:[...PROXY_SRCS]}));
+  const sv=document.getElementById('sp-saved');sv.style.display='inline';
+  setTimeout(()=>sv.style.display='none',2000);
 }
+
 function loadFilters(){
   try{
-    const f=JSON.parse(localStorage.getItem(LS_FLT)||'{}');
+    const f=JSON.parse(localStorage.getItem(LS_FILTERS)||'{}');
     FILTER_TYPES=new Set(f.types||[]);
     FILTER_TAGS=f.tags||[];
   }catch{}
 }
 function saveFilters(){
-  localStorage.setItem(LS_FLT,JSON.stringify({types:[...FILTER_TYPES],tags:FILTER_TAGS}));
+  localStorage.setItem(LS_FILTERS,JSON.stringify({types:[...FILTER_TYPES],tags:FILTER_TAGS}));
 }
+
 function toggleSettings(){
   const p=document.getElementById('settings-panel');
-  p.style.display=p.style.display==='block'?'none':'block';
+  p.style.display=p.style.display==='none'||!p.style.display?'block':'none';
 }
 
 // ═══ UTILITIES ════════════════════════════════════════
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function sid(s){return String(s).replace(/[^a-z0-9]/gi,'_')}
-function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function containsWord(text,word){
   if(!text||!word)return false;
   if(/[^\x00-\x7F]/.test(word))return text.toLowerCase().includes(word.toLowerCase());
@@ -261,7 +316,7 @@ function containsWord(text,word){
 function findMatchCtx(fields,word){
   const e=word.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   const re=/[^\x00-\x7F]/.test(word)?new RegExp(word,'i'):new RegExp('(?<![a-zA-Z])'+e+'(?![a-zA-Z])','i');
-  for(const{name,text}of fields){
+  for(const {name,text} of fields){
     if(!text)continue;
     const i=text.search(re);
     if(i===-1)continue;
@@ -270,53 +325,49 @@ function findMatchCtx(fields,word){
   }
   return null;
 }
+
 function cardMatchesFilter(card){
   const a=card.art||card;
   if(FILTER_TYPES.size>0){
-    const str=(a.type+' '+a.title+' '+(a.match_context?.excerpt||'')).toLowerCase();
-    let hit=false;for(const t of FILTER_TYPES)if(str.includes(t)){hit=true;break;}
+    const typeStr=(a.type+' '+a.title+' '+(a.match_context?.excerpt||'')).toLowerCase();
+    let hit=false;
+    for(const t of FILTER_TYPES){if(typeStr.includes(t)){hit=true;break;}}
     if(!hit)return false;
   }
   for(const tag of FILTER_TAGS){
-    const str=(a.title+' '+a.artist+' '+(a.match_context?.excerpt||'')).toLowerCase();
-    if(!str.includes(tag.toLowerCase()))return false;
+    const s=(a.title+' '+a.artist+' '+(a.match_context?.excerpt||'')).toLowerCase();
+    if(!s.includes(tag.toLowerCase()))return false;
   }
   return true;
 }
 
 // ═══ FETCH ════════════════════════════════════════════
-function applyProxy(url,src){
+function applyProxy(url, src){
   if(!PROXY||!PROXY_SRCS.has(src))return url;
   return PROXY+encodeURIComponent(url);
 }
-async function fj(url,src=''){
+
+async function fj(url, src=''){
   const finalUrl=src?applyProxy(url,src):url;
   try{
     const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),15000);
-    const r=await fetch(finalUrl,{signal:ctrl.signal});
+    const r=await fetch(finalUrl,{headers:{'User-Agent':'WordArtTool/1.0'},signal:ctrl.signal});
     clearTimeout(t);
     if(!r.ok)return{__error:'http',status:r.status};
     return await r.json();
   }catch(e){
     if(e.name==='AbortError')return{__error:'timeout'};
+    if(e.message&&(e.message.toLowerCase().includes('cors')||e.message.toLowerCase().includes('blocked')))
+      return{__error:'cors'};
     return{__error:'network',msg:e.message};
-  }
-}
-// Met专用：带重试和退避
-async function fjRetry(url,src,times=3){
-  for(let i=0;i<times;i++){
-    if(i>0)await sleep(1500*i);
-    const r=await fj(url,src);
-    if(!r?.__error)return r;
-    if(r.status===429)await sleep(3000);
-    if(i===times-1)return r;
   }
 }
 function errMsg(d){
   if(!d)return '无响应';
   if(d.__error==='timeout')return '超时(15s)';
+  if(d.__error==='cors')return 'CORS被拦截—需要代理';
   if(d.__error==='http')return 'HTTP '+d.status;
-  if(d.__error==='network')return '网络错误'+(d.msg?': '+d.msg.slice(0,40):'');
+  if(d.__error==='network')return '网络错误'+(d.msg?': '+d.msg.slice(0,30):'');
   return '未知错误';
 }
 
@@ -328,52 +379,58 @@ function setSrcStatus(word,src,state,found,total,error){
 function renderSrcStatusRow(word){
   const el=document.getElementById('src-status');
   if(!el)return;
-  const items=[...AS].map(src=>{
+  const allKeys=[...AS].map(s=>word+':'+s);
+  const anyActive=allKeys.some(k=>SSTATUS[k]);
+  el.style.display=anyActive?'flex':'none';
+  el.innerHTML=[...AS].map(src=>{
     const st=SSTATUS[word+':'+src];
-    if(!st)return`<span class="sst-item"><span class="sst-name">${SRC_LABELS[src]}</span><span style="color:var(--bd2);font-size:11px">—</span></span>`;
+    if(!AS.has(src))return'';
+    if(!st)return`<span class="sst-item"><span class="sst-name">${SRC_LABELS[src]}</span><span class="sst-val sst-idle">—</span></span>`;
     let val='';
-    if(st.state==='searching')val=`<span style="color:var(--tx3);font-size:11px"><span class="spin"></span>搜索中</span>`;
-    else if(st.state==='done')val=`<span class="sst-val ${st.found>0?'sst-ok':'sst-zero'}" style="font-size:11px">${st.found}件${st.total?' / 共'+st.total:''}</span>`;
-    else if(st.state==='error')val=`<span class="sst-err" style="font-size:11px" title="${esc(st.error)}">✗ ${esc(st.error.slice(0,30))}</span>`;
+    if(st.state==='searching')val=`<span class="sst-val sst-searching"><span class="spin"></span>搜索中</span>`;
+    else if(st.state==='done')val=`<span class="sst-val ${st.found>0?'sst-ok':'sst-zero'}">${st.found}件${st.total?` / 共${st.total}`:''}</span>`;
+    else if(st.state==='error')val=`<span class="sst-val sst-err" title="${esc(st.error)}">✗ ${esc(st.error)}</span>`;
     return`<span class="sst-item"><span class="sst-name">${SRC_LABELS[src]}</span>${val}</span>`;
-  });
-  el.innerHTML=items.join('');
-  el.style.display='flex';
+  }).join('');
 }
 
-// ═══ SEARCH: Met ══════════════════════════════════════
+// ═══ SEARCH FUNCTIONS ══════════════════════════════════
 async function fetchMetNext(word,pk){
   let p=POOL[pk]||={metIds:[],metCursor:0,total:0,initialized:false,exhausted:false};
   if(!p.initialized){
     p.initialized=true;
-    const d=await fjRetry(`https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q=${encodeURIComponent(word)}`,'met',3);
+    const d=await fj(`https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q=${encodeURIComponent(word)}`,'met');
     if(d?.__error)return{error:errMsg(d)};
     if(!d?.objectIDs?.length)return{error:'无结果(站点总数:0)'};
     p.metIds=d.objectIDs;p.total=d.total||d.objectIDs.length;
+    setSrcStatus(CW,'met','searching',0,p.total,'');
   }
   while(p.metCursor<p.metIds.length){
     const id=p.metIds[p.metCursor++];
-    await sleep(400); // 避免429
     const d=await fj(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`,'met');
     if(!d||d.__error||!d.primaryImageSmall)continue;
+    // Only items where word appears in key fields (no 仅搜索命中)
     const fields=[
-      {name:'title',text:d.title||''},{name:'objectName',text:d.objectName||''},
-      {name:'culture',text:d.culture||''},{name:'medium',text:d.medium||''},
+      {name:'title',text:d.title||''},
+      {name:'objectName',text:d.objectName||''},
+      {name:'culture',text:d.culture||''},
+      {name:'medium',text:d.medium||''},
       {name:'artist',text:d.artistDisplayName||''},
       {name:'tags',text:(d.tags||[]).map(t=>t.term).join(', ')},
       {name:'classification',text:d.classification||''},
     ];
     const mc=findMatchCtx(fields,word);
-    if(!mc)continue; // 只要字段匹配，不要仅搜索命中
+    if(!mc)continue; // Skip items not matching in key fields
     return{item:{id:'met_'+id,title:d.title||'',artist:d.artistDisplayName||'',year:d.objectDate||'',
       type:d.objectName||'',culture:d.culture||'',source:'met',
       image_url:d.primaryImageSmall,image_url_large:d.primaryImage,page_url:d.objectURL||'',
-      match_context:mc,note:'字段匹配('+mc.field+')'},hasMore:p.metCursor<p.metIds.length,total:p.total};
+      match_context:mc,note:'字段匹配('+mc.field+')'},
+      hasMore:p.metCursor<p.metIds.length,total:p.total};
   }
-  p.exhausted=true;return{error:'已无更多字段匹配结果',total:p.total};
+  p.exhausted=true;
+  return{error:'已无更多匹配结果',total:p.total};
 }
 
-// ═══ SEARCH: Wikimedia ════════════════════════════════
 async function fetchWikiNext(word,pk){
   let p=POOL[pk]||={items:[],cursor:0,sroffset:null,exhausted:false,totalHits:0};
   while(p.cursor<p.items.length){
@@ -407,7 +464,6 @@ async function fetchWikiNext(word,pk){
   return{error:'当前批次无匹配',total:p.totalHits};
 }
 
-// ═══ SEARCH: Archive ══════════════════════════════════
 async function fetchArchiveNext(word,pk){
   let p=POOL[pk]||={items:[],cursor:0,page:1,exhausted:false,totalHits:0};
   while(p.cursor<p.items.length){
@@ -420,7 +476,7 @@ async function fetchArchiveNext(word,pk){
   const q=queries[(p.page-1)%queries.length],pg=Math.ceil(p.page/queries.length);
   p.page++;
   const d=await fj(`https://archive.org/advancedsearch.php?q=${encodeURIComponent(q)}&fl[]=identifier,title,creator,date,description&rows=8&page=${pg}&output=json`,'archive');
-  if(d?.__error)return{error:errMsg(d)+(PROXY?'':' — 建议配置CORS代理')};
+  if(d?.__error)return{error:errMsg(d)+'（提示：配置CORS代理可解决）'};
   if(!d?.response?.docs?.length){p.exhausted=true;return{error:'无结果',total:p.totalHits};}
   if(!p.totalHits)p.totalHits=d.response.numFound||0;
   for(const item of d.response.docs){
@@ -438,171 +494,42 @@ async function fetchArchiveNext(word,pk){
     if(getFB(word,item.id)?.status==='rejected')continue;
     return{item,hasMore:true,total:p.totalHits};
   }
-  return{error:'当前批次无匹配',total:p.totalHits};
+  return{error:'当前批次无匹配，继续中',total:p.totalHits};
 }
 
-// ═══ SEARCH: Rijksmuseum (无需key) ════════════════════
-async function fetchRijksNext(word,pk){
-  let p=POOL[pk]||={items:[],cursor:0,nextUrl:null,exhausted:false,totalHits:0,initialized:false};
+async function fetchWikiArtNext(word,pk){
+  let p=POOL[pk]||={items:[],cursor:0,page:1,exhausted:false};
   while(p.cursor<p.items.length){
     const item=p.items[p.cursor++];
     if(getFB(word,item.id)?.status==='rejected')continue;
-    return{item,hasMore:true,total:p.totalHits};
+    return{item,hasMore:true};
   }
-  if(p.exhausted)return{error:'已无更多',total:p.totalHits};
-  const searchUrl=p.nextUrl||
-    `https://data.rijksmuseum.nl/search/collection?title=${encodeURIComponent(word)}&imageAvailable=true`;
-  const sd=await fj(searchUrl,'rijks');
-  if(sd?.__error)return{error:errMsg(sd)};
-  if(!sd?.orderedItems?.length){p.exhausted=true;return{error:'无结果',total:p.totalHits};}
-  p.totalHits=sd.partOf?.totalItems||0;
-  p.nextUrl=sd.next?.id||null;
-  if(!p.nextUrl)p.exhausted=true;
-  for(const obj of sd.orderedItems){
-    // ID格式: https://id.rijksmuseum.nl/200100988
-    const numId=obj.id.replace('https://id.rijksmuseum.nl/','');
-    const metaUrl=`https://data.rijksmuseum.nl/${numId}?_profile=la&_mediatype=application/json`;
-    const meta=await fj(metaUrl,'rijks');
-    if(!meta||meta.__error)continue;
-    const imageId=extractRijksImageId(meta);
-    if(!imageId)continue;
-    const title=extractRijksLabel(meta)||'';
-    const artist=extractRijksArtist(meta)||'';
-    const year=extractRijksYear(meta)||'';
-    const mc=findMatchCtx([
-      {name:'title',text:title},
-      {name:'description',text:extractRijksDesc(meta)},
-    ],word);
+  if(p.exhausted)return{error:'已无更多'};
+  const d=await fj(`https://www.wikiart.org/en/search/${encodeURIComponent(word)}/${p.page}?json=2`,'wikiart');
+  p.page++;
+  if(d?.__error)return{error:errMsg(d)+'（提示：配置CORS代理可解决）'};
+  const items=Array.isArray(d)?d:(d?.paintings||[]);
+  if(!items.length){p.exhausted=true;return{error:'无结果'};}
+  for(const item of items){
+    if(!item.image)continue;
+    const ts=item.title||'';
+    const mc=findMatchCtx([{name:'title',text:ts}],word);
     if(!mc)continue;
-    p.items.push({id:'rijks_'+numId,title,artist,year,type:'artwork',source:'rijks',
-      image_url:`https://iiif.micr.io/${imageId}/full/800,/0/default.jpg`,
-      image_url_large:`https://iiif.micr.io/${imageId}/full/max/0/default.jpg`,
-      page_url:`https://www.rijksmuseum.nl/en/collection/${numId}`,
-      match_context:mc,note:''});
+    p.items.push({id:'wikiart_'+(item.contentId||item.id||ts),title:ts,
+      artist:item.artistName||'',year:item.completitionYear?String(item.completitionYear):'',
+      type:'painting',source:'wikiart',
+      image_url:item.image,image_url_large:item.image,
+      page_url:item.url?`https://www.wikiart.org${item.url}`:'',match_context:mc,note:'标题匹配'});
   }
   while(p.cursor<p.items.length){
     const item=p.items[p.cursor++];
     if(getFB(word,item.id)?.status==='rejected')continue;
-    return{item,hasMore:!p.exhausted,total:p.totalHits};
+    return{item,hasMore:!p.exhausted};
   }
-  return{error:'当前批次无标题匹配',total:p.totalHits};
-}
-function extractRijksImageId(meta){
-  const reps=meta.representation||[];
-  for(const rep of reps){
-    const svc=rep.digitally_shown_by?.[0]?.access_point?.[0]?.id||'';
-    const m=svc.match(/iiif\.micr\.io\/([^/?]+)/);
-    if(m)return m[1];
-    const m2=(rep.id||'').match(/iiif\.micr\.io\/([^/?]+)/);
-    if(m2)return m2[1];
-  }
-  // 尝试 subject_of
-  const subs=meta.subject_of||[];
-  for(const s of subs){
-    const m=(s.id||'').match(/iiif\.micr\.io\/([^/?]+)/);
-    if(m)return m[1];
-  }
-  return null;
-}
-function extractRijksLabel(meta){
-  const idb=meta.identified_by||[];
-  const t=idb.find(n=>n.type==='Name'&&n.classified_as?.some(c=>c._label?.toLowerCase().includes('title')));
-  if(t)return t.content||'';
-  if(idb[0])return idb[0].content||idb[0].value||'';
-  return meta._label||'';
-}
-function extractRijksArtist(meta){
-  const prod=meta.produced_by;
-  if(!prod)return '';
-  const carried=prod.carried_out_by||[];
-  if(carried[0])return carried[0]._label||'';
-  return '';
-}
-function extractRijksYear(meta){
-  const ts=meta.produced_by?.timespan||meta.timespan;
-  if(!ts)return '';
-  return ts._label||ts.begin_of_the_begin?.slice(0,4)||'';
-}
-function extractRijksDesc(meta){
-  const refs=meta.referred_to_by||[];
-  const desc=refs.find(r=>r.classified_as?.some(c=>c._label?.toLowerCase().includes('description')));
-  return desc?.content||'';
+  return p.exhausted?{error:'已无更多'}:{error:'当前页无匹配'};
 }
 
-// ═══ WikiArt: 搜索引擎入口 ════════════════════════════
-function openWikiArtSearch(word){
-  window.open(`https://www.google.com/search?q=site:wikiart.org+${encodeURIComponent(word)}&tbm=isch`,'_blank');
-}
-function showManualAdd(word){
-  if(document.getElementById('manual-add-box'))return;
-  const area=document.getElementById('art-area');
-  if(!area)return;
-  const box=document.createElement('div');
-  box.id='manual-add-box';box.className='manual-add-box';
-  box.innerHTML=`
-    <input type="text" id="manual-url" placeholder="粘贴图片 URL（右键图片 → 复制图片地址）…" style="flex:1;min-width:200px;padding:5px 8px;font-size:12px;border:1px solid var(--bd);border-radius:var(--r);background:var(--surface2);color:var(--tx)">
-    <input type="text" id="manual-title" placeholder="标题（可选）" style="width:130px;padding:5px 8px;font-size:12px;border:1px solid var(--bd);border-radius:var(--r);background:var(--surface2);color:var(--tx)">
-    <button class="btn" onclick="submitManualAdd('${esc(word)}')">添加</button>
-    <button class="btn" onclick="document.getElementById('manual-add-box').remove()">取消</button>`;
-  area.insertBefore(box,area.firstChild);
-  document.getElementById('manual-url').focus();
-}
-function submitManualAdd(word){
-  const url=(document.getElementById('manual-url')?.value||'').trim();
-  const title=(document.getElementById('manual-title')?.value||'').trim()||'手动添加';
-  if(!url)return;
-  const id='manual_'+Date.now();
-  const card={art:{id,title,artist:'',year:'',type:'',source:'wikiart',
-    image_url:url,image_url_large:url,page_url:'',
-    match_context:{field:'manual',excerpt:'手动添加的图片URL'},note:'手动'},status:'pending'};
-  CARDS[word]=CARDS[word]||[];CARDS[word].push(card);
-  const gw=document.getElementById('art-grid-wr');
-  if(gw){
-    let grid=gw.querySelector('.art-grid');
-    if(!grid){gw.innerHTML='<div class="art-grid"></div>';grid=gw.querySelector('.art-grid');}
-    const tmp=document.createElement('div');tmp.innerHTML=renderCard(word,card);
-    grid.appendChild(tmp.firstChild);bindCardEvents(word);applyFilters();
-  }
-  document.getElementById('manual-add-box')?.remove();
-}
-
-const FETCHERS={met:fetchMetNext,wiki:fetchWikiNext,archive:fetchArchiveNext,rijks:fetchRijksNext};
-
-// ═══ FILTER BAR ═══════════════════════════════════════
-function renderFilterBar(){
-  const el=document.getElementById('filter-bar');
-  if(!el)return;
-  el.innerHTML=`
-    <span class="flt-lbl">筛选：</span>
-    ${TYPE_OPTS.map(t=>`<span class="flt-chip${FILTER_TYPES.has(t.key)?' on':''}" onclick="toggleFilterType('${t.key}')">${t.label}</span>`).join('')}
-    ${FILTER_TAGS.length?'<span class="flt-sep"></span>':''}
-    ${FILTER_TAGS.map((tag,i)=>`<span class="flt-tag">${esc(tag)}<button class="flt-tag-del" onclick="removeFilterTag(${i})">×</button></span>`).join('')}
-    <span class="flt-add">
-      <input type="text" id="flt-inp" placeholder="新增关键词标签…" onkeydown="if(event.key==='Enter')addFilterTag()">
-      <button onclick="addFilterTag()">+</button>
-    </span>
-    ${FILTER_TYPES.size>0||FILTER_TAGS.length>0?`<button class="btn" style="font-size:11px;margin-left:auto" onclick="clearFilters()">清除筛选</button>`:''}`;
-}
-function toggleFilterType(key){
-  if(FILTER_TYPES.has(key))FILTER_TYPES.delete(key);else FILTER_TYPES.add(key);
-  saveFilters();renderFilterBar();applyFilters();
-}
-function addFilterTag(){
-  const inp=document.getElementById('flt-inp');
-  const val=(inp?.value||'').trim();
-  if(!val||FILTER_TAGS.includes(val))return;
-  FILTER_TAGS.push(val);saveFilters();renderFilterBar();applyFilters();
-  if(inp)inp.value='';
-}
-function removeFilterTag(i){FILTER_TAGS.splice(i,1);saveFilters();renderFilterBar();applyFilters();}
-function clearFilters(){FILTER_TYPES.clear();FILTER_TAGS=[];saveFilters();renderFilterBar();applyFilters();}
-function applyFilters(){
-  document.querySelectorAll('.art-card').forEach(card=>{
-    const id=card.dataset.id;
-    const obj=(CARDS[CW]||[]).find(c=>(c.art||c).id===id);
-    card.classList.toggle('hidden-filter',!!(obj&&!cardMatchesFilter(obj)));
-  });
-}
+const FETCHERS={met:fetchMetNext,wiki:fetchWikiNext,archive:fetchArchiveNext,wikiart:fetchWikiArtNext};
 
 // ═══ SIDEBAR ══════════════════════════════════════════
 function wordStat(word){
@@ -614,17 +541,20 @@ function wordStat(word){
   return'none';
 }
 function dotColor(s){return{none:'var(--bd2)',partial:'#d4920a',complete:'var(--ok)'}[s]||'var(--bd2)'}
+
 function renderSB(){
   const words=Object.keys(W).sort(),q=SQ.toLowerCase().trim();
   const filtered=q?words.filter(w=>w.toLowerCase().includes(q)):words;
   if(!words.length){document.getElementById('sb-list').innerHTML='<div class="sb-empty">加载 JSON 或 TXT<br>单词文件即可开始</div>';return;}
-  const groups={};filtered.forEach(w=>{const l=w[0].toUpperCase();(groups[l]=groups[l]||[]).push(w);});
+  const groups={};
+  filtered.forEach(w=>{const l=w[0].toUpperCase();(groups[l]=groups[l]||[]).push(w);});
   let html='';
   Object.keys(groups).sort().forEach(letter=>{
     const ws=groups[letter],open=CW&&ws.includes(CW);
-    html+=`<div>
+    html+=`<div class="ag">
       <div class="ag-hd" onclick="var b=this.nextElementSibling,a=this.querySelector('.ag-arr');b.classList.toggle('clpsd');a.style.transform=b.classList.contains('clpsd')?'':'rotate(90deg)'">
-        <span>${letter}</span><span><span class="ag-cnt">${ws.length}</span><span class="ag-arr" style="${open?'transform:rotate(90deg)':''}">▶</span></span>
+        <span>${letter}</span>
+        <span><span class="ag-cnt">${ws.length}</span><span class="ag-arr" style="${open?'transform:rotate(90deg)':''}">▶</span></span>
       </div>
       <div class="ag-body${open?'':' clpsd'}">
         ${ws.map(w=>`<div class="wi${CW===w?' act':''}" onclick="selWord('${esc(w)}')" data-w="${esc(w)}">
@@ -642,24 +572,65 @@ function updDot(word){
   });
 }
 
+// ═══ FILTER BAR ═══════════════════════════════════════
+function renderFilterBar(){
+  const el=document.getElementById('filter-bar');
+  if(!el)return;
+  el.innerHTML=`
+    <span class="flt-lbl">筛选：</span>
+    ${TYPE_OPTS.map(t=>`<span class="flt-chip${FILTER_TYPES.has(t.key)?' on':''}" onclick="toggleFilterType('${t.key}')">${t.label}</span>`).join('')}
+    ${FILTER_TYPES.size>0||FILTER_TAGS.length>0?'<span class="flt-sep"></span>':''}
+    ${FILTER_TAGS.map((tag,i)=>`<span class="flt-tag">${esc(tag)}<button class="flt-tag-del" onclick="removeFilterTag(${i})">×</button></span>`).join('')}
+    <span class="flt-add">
+      <input type="text" id="flt-inp" placeholder="新增标签…" onkeydown="if(event.key==='Enter')addFilterTag()">
+      <button onclick="addFilterTag()">+</button>
+    </span>
+    ${FILTER_TYPES.size>0||FILTER_TAGS.length>0?`<button class="flt-toggle" onclick="clearFilters()">清除筛选</button>`:''}
+  `;
+}
+function toggleFilterType(key){
+  if(FILTER_TYPES.has(key))FILTER_TYPES.delete(key);else FILTER_TYPES.add(key);
+  saveFilters();renderFilterBar();applyFilters();
+}
+function addFilterTag(){
+  const inp=document.getElementById('flt-inp');
+  const val=(inp?.value||'').trim();
+  if(!val)return;
+  if(!FILTER_TAGS.includes(val)){FILTER_TAGS.push(val);saveFilters();renderFilterBar();applyFilters();}
+  if(inp)inp.value='';
+}
+function removeFilterTag(i){
+  FILTER_TAGS.splice(i,1);saveFilters();renderFilterBar();applyFilters();
+}
+function clearFilters(){
+  FILTER_TYPES.clear();FILTER_TAGS=[];saveFilters();renderFilterBar();applyFilters();
+}
+function applyFilters(){
+  document.querySelectorAll('.art-card').forEach(card=>{
+    const id=card.dataset.id;
+    const word=CW;
+    const cardObj=(CARDS[word]||[]).find(c=>(c.art||c).id===id);
+    if(!cardObj){card.classList.remove('hidden-filter');return;}
+    card.classList.toggle('hidden-filter',!cardMatchesFilter(cardObj));
+  });
+}
+
 // ═══ MAIN RENDER ══════════════════════════════════════
 function renderMain(word){
   const mn=document.getElementById('main');
-  const wd=W[word]||{},wid=sid(word);
+  const wd=W[word]||{};
+  const wid=sid(word);
   const apv=Object.keys(FB).filter(k=>k.startsWith(word+'||')&&FB[k].status==='approved').length;
   const totalFB=Object.keys(FB).filter(k=>k.startsWith(word+'||')).length;
   const pct=totalFB>0?Math.round(apv/totalFB*100):0;
+
   const transHTML=(wd.translations||[]).map(t=>`<span class="w-tag"><span class="w-pos">${esc(t.type)}</span>${esc(t.translation)}</span>`).join('');
   const phHTML=wd.phrases?.length?`<div id="w-phrases">${wd.phrases.map(p=>`<span style="margin-right:14px"><span class="ph-w">${esc(p.phrase)}</span> — ${esc(p.translation)}</span>`).join('')}</div>`:'';
-  // 来源按钮：实际来源正常切换，WikiArt 改为搜索引擎入口
-  const srcBtns=Object.entries(SRC_LABELS).map(([id,label])=>{
-    if(id==='wikiart'){
-      return`<button class="btn src-btn ext" onclick="openWikiArtSearch('${esc(word)}')" title="在 Google 图片中搜索 WikiArt 站内结果">${label} ↗</button>
-             <button class="btn" style="font-size:11px" onclick="showManualAdd('${esc(word)}')">手动添加 URL</button>`;
-    }
-    return`<button class="btn src-btn${AS.has(id)?' on':''}" onclick="toggleSrc('${id}','${esc(word)}')">${label}</button>`;
-  }).join('');
+  const srcBtns=Object.entries(SRC_LABELS).map(([id,label])=>
+    `<button class="btn src-btn${AS.has(id)?' on':''}" onclick="toggleSrc('${id}','${esc(word)}')">${label}</button>`
+  ).join('');
   const cards=CARDS[word]||[];
+
   mn.innerHTML=`
     <div id="w-hdr">
       <div id="w-big">${esc(word)}</div>
@@ -675,13 +646,14 @@ function renderMain(word){
       <span class="src-lbl">来源：</span>
       <div class="src-grp">${srcBtns}</div>
       <span class="src-sep"></span>
-      <button class="btn" style="font-size:11px" onclick="reloadWord('${esc(word)}')">重新搜索</button>
+      <button class="btn src-reload" onclick="reloadWord('${esc(word)}')">重新搜索</button>
     </div>
-    <div id="src-status"></div>
-    <div id="filter-bar"></div>
+    <div id="src-status" style="display:none"></div>
+    <div id="filter-bar" style="display:flex"></div>
     <div id="art-area">
-      <div id="art-grid-wr">${cards.length?'<div class="art-grid">'+cards.map(c=>renderCard(word,c)).join('')+'</div>':'<div class="no-art">正在搜索艺术品…<br><small>若长时间无结果，查看来源状态行了解原因</small></div>'}</div>
+      <div id="art-grid-wr">${cards.length?'<div class="art-grid">'+cards.map(c=>renderCard(word,c)).join('')+'</div>':'<div class="no-art">正在搜索艺术品…<br><span style="font-size:11px">若长时间无结果，请查看上方来源状态行</span></div>'}</div>
     </div>`;
+
   renderFilterBar();
   renderSrcStatusRow(word);
   bindCardEvents(word);
@@ -689,10 +661,13 @@ function renderMain(word){
 }
 
 function renderCard(word,card){
-  const a=card.art||card,status=card.status||'pending';
+  const a=card.art||card;
+  const status=card.status||'pending';
   const fb=getFB(word,a.id);
-  const okSel=fb?.status==='approved'?'sel':'',noSel=fb?.status==='rejected'?'sel':'';
-  const okNote=fb?.status==='approved'?esc(fb.note||''):'',noNote=fb?.status==='rejected'?esc(fb.note||''):'';
+  const okSel=fb?.status==='approved'?'sel':'';
+  const noSel=fb?.status==='rejected'?'sel':'';
+  const okNote=fb?.status==='approved'?esc(fb.note||''):'';
+  const noNote=fb?.status==='rejected'?esc(fb.note||''):'';
   const sub=[a.artist,a.year].filter(Boolean).join(' · ');
   const ctxHTML=a.match_context?`<div class="art-ctx"><div class="art-ctx-f">${esc(a.match_context.field)}</div>${esc(a.match_context.excerpt)}</div>`:'';
   const imgHTML=a.image_url
@@ -726,7 +701,8 @@ function bindCardEvents(word){
     const id=card.dataset.id,src=card.dataset.src;
     card.querySelectorAll('.fb-act').forEach(btn=>{
       btn.addEventListener('click',()=>{
-        const status=btn.dataset.action,a=findCardArt(word,id);
+        const status=btn.dataset.action;
+        const a=findCardArt(word,id);
         setFB(word,id,status,'',{title:a?.title||'',image_url:a?.image_url||'',page_url:a?.page_url||'',source:src});
         updateCardStatus(word,id,status);
         if(status==='rejected')replaceCard(word,id,src);
@@ -750,11 +726,14 @@ function bindCardEvents(word){
 }
 
 function findCardArt(word,id){
-  const c=(CARDS[word]||[]).find(c=>(c.art||c).id===id);
+  const cards=CARDS[word]||[];
+  const c=cards.find(c=>(c.art||c).id===id);
   return c?.art||c;
 }
+
 function updateCardStatus(word,id,status){
-  (CARDS[word]||[]).forEach(c=>{if((c.art||c).id===id)c.status=status;});
+  const cards=CARDS[word]||[];
+  cards.forEach(c=>{if((c.art||c).id===id)c.status=status;});
   const el=document.querySelector(`.art-card[data-id="${CSS.escape(id)}"]`);
   if(!el)return;
   el.classList.toggle('approved',status==='approved');
@@ -762,35 +741,46 @@ function updateCardStatus(word,id,status){
   el.querySelector('.fb-no')?.classList.toggle('sel',status==='rejected');
   updProg(word);updDot(word);
 }
+
 async function replaceCard(word,id,src){
-  if(!src||!FETCHERS[src])return;
+  if(!src)return;
   CARDS[word]=(CARDS[word]||[]).filter(c=>(c.art||c).id!==id);
   const el=document.querySelector(`.art-card[data-id="${CSS.escape(id)}"]`);
   if(el)el.innerHTML=`<div class="art-img-wr"><div class="art-img-ph"><div class="spin"></div><div style="font-size:11px">加载中…</div></div></div>`;
-  const pk=word+':'+src,result=await FETCHERS[src](word,pk);
+  const pk=word+':'+src,fetcher=FETCHERS[src];
+  if(!fetcher){if(el)el.remove();return;}
+  const result=await fetcher(word,pk);
   if(result.error){
-    if(el)el.innerHTML=`<div class="art-img-wr"><div class="art-img-ph" style="color:var(--no)">${esc(result.error)}</div></div>`;
+    if(el)el.innerHTML=`<div class="art-img-wr"><div class="art-img-ph">${esc(result.error)}</div></div>`;
+    setSrcStatus(word,src,'done',(SSTATUS[word+':'+src]?.found||0),result.total||0,'');
     return;
   }
   const newCard={art:result.item,status:'pending'};
-  CARDS[word].push(newCard);
+  CARDS[word]=CARDS[word]||[];CARDS[word].push(newCard);
+  const newHTML=renderCard(word,newCard);
   if(el){
-    const tmp=document.createElement('div');tmp.innerHTML=renderCard(word,newCard);
-    el.replaceWith(tmp.firstChild);bindCardEvents(word);applyFilters();
+    const tmp=document.createElement('div');tmp.innerHTML=newHTML;
+    el.replaceWith(tmp.firstChild);
+    bindCardEvents(word);
+    applyFilters();
   }
+  const st=SSTATUS[word+':'+src]||{};
+  setSrcStatus(word,src,'done',(st.found||0)+1,result.total||st.total||0,'');
   updDot(word);
 }
+
 function updProg(word){
   const wid=sid(word);
   const apv=Object.keys(FB).filter(k=>k.startsWith(word+'||')&&FB[k].status==='approved').length;
   const total=Object.keys(FB).filter(k=>k.startsWith(word+'||')).length;
   const pct=total>0?Math.round(apv/total*100):0;
-  const pf=document.getElementById('prog-fill-'+wid),pt=document.getElementById('prog-txt-'+wid);
+  const pf=document.getElementById('prog-fill-'+wid);
+  const pt=document.getElementById('prog-txt-'+wid);
   if(pf)pf.style.width=pct+'%';
   if(pt)pt.textContent=`${apv} 合格 / ${total} 已标注`;
 }
 
-// ═══ WORD SELECTION & SEARCH ══════════════════════════
+// ═══ WORD SELECTION ════════════════════════════════════
 async function selWord(word){
   CW=word;
   document.querySelectorAll('.wi').forEach(el=>el.classList.toggle('act',el.dataset.w===word));
@@ -803,8 +793,9 @@ async function selWord(word){
     });
   }
   renderMain(word);
-  Promise.all([...AS].map(src=>searchAndAppend(word,src,MAX)));
+  for(const src of AS)await searchAndAppend(word,src,MAX);
 }
+
 async function searchAndAppend(word,src,count){
   const fetcher=FETCHERS[src];
   if(!fetcher||!AS.has(src))return;
@@ -814,27 +805,41 @@ async function searchAndAppend(word,src,count){
   setSrcStatus(word,src,'searching',existing,0,'');
   let found=0;
   for(let i=0;i<need;i++){
-    const pk=word+':'+src,result=await fetcher(word,pk);
+    const pk=word+':'+src;
+    const result=await fetcher(word,pk);
     if(result.error){
       setSrcStatus(word,src,'error',found,result.total||0,result.error);
+      if(i===0&&CW===word){
+        const gw=document.getElementById('art-grid-wr');
+        if(gw&&!gw.querySelector('.art-grid')){
+          gw.innerHTML=`<div class="no-art">所有来源未返回结果<br><small style="font-size:11px">查看上方状态行了解每个来源的具体原因</small></div>`;
+        }
+      }
       return;
     }
     found++;
-    CARDS[word]=CARDS[word]||[];CARDS[word].push({art:result.item,status:'pending'});
+    CARDS[word]=CARDS[word]||[];
+    CARDS[word].push({art:result.item,status:'pending'});
     if(CW===word){
       const gw=document.getElementById('art-grid-wr');
       if(gw){
         let grid=gw.querySelector('.art-grid');
         if(!grid){gw.innerHTML='<div class="art-grid"></div>';grid=gw.querySelector('.art-grid');}
-        const tmp=document.createElement('div');tmp.innerHTML=renderCard(word,{art:result.item,status:'pending'});
-        grid.appendChild(tmp.firstChild);bindCardEvents(word);applyFilters();
+        const tmp=document.createElement('div');
+        tmp.innerHTML=renderCard(word,{art:result.item,status:'pending'});
+        grid.appendChild(tmp.firstChild);
+        bindCardEvents(word);
+        applyFilters();
       }
     }
   }
-  const pool=POOL[word+':'+src]||{};
-  setSrcStatus(word,src,'done',found,pool.total||pool.totalHits||0,'');
+  const pk=word+':'+src;
+  const pool=POOL[pk]||{};
+  const total=pool.total||pool.totalHits||0;
+  setSrcStatus(word,src,'done',found,total,'');
   updDot(word);
 }
+
 function toggleSrc(src,word){
   if(AS.has(src))AS.delete(src);else AS.add(src);
   document.querySelectorAll('.src-btn').forEach(btn=>{
@@ -842,6 +847,7 @@ function toggleSrc(src,word){
   });
   if(AS.has(src)&&word)searchAndAppend(word,src,MAX);
 }
+
 async function reloadWord(word){
   CARDS[word]=[];
   SSTATUS=Object.fromEntries(Object.entries(SSTATUS).filter(([k])=>!k.startsWith(word+':')));
@@ -852,11 +858,12 @@ async function reloadWord(word){
       match_context:null,note:'从反馈恢复'},status:'approved'});
   });
   renderMain(word);
-  Promise.all([...AS].map(src=>searchAndAppend(word,src,MAX)));
+  for(const src of AS)await searchAndAppend(word,src,MAX);
 }
 
-// ═══ FILE I/O ════════════════════════════════════════
+// ═══ FILE LOADING ═════════════════════════════════════
 function readFile(file,cb){const r=new FileReader();r.onload=e=>cb(e.target.result);r.readAsText(file);}
+
 function loadWordFile(file){
   readFile(file,text=>{
     W={};
@@ -872,34 +879,40 @@ function loadWordFile(file){
         });
       }catch{alert('JSON解析失败');}
     }
-    CARDS={};POOL={};SSTATUS={};updSt();renderSB();
+    CARDS={};POOL={};SSTATUS={};
+    updSt();renderSB();
     document.getElementById('main').innerHTML='<div id="main-empty">← 从左侧选择单词开始</div>';
     CW=null;
   });
 }
+
 function loadFBFile(file){
   readFile(file,text=>{
     try{
       const data=JSON.parse(text);
       if(data.approved||data.rejected){
-        const proc=(arr,status)=>(arr||[]).forEach(f=>{
+        const process=(arr,status)=>(arr||[]).forEach(f=>{
           FB[fbKey(f.word,f.artwork_id||f.id)]={word:f.word,id:f.artwork_id||f.id,
             status:f.status||status,note:f.note||'',title:f.title||'',
             image_url:f.image_url||'',page_url:f.page_url||'',source:f.source||'',ts:f.timestamp||''};
         });
-        proc(data.approved,'approved');proc(data.rejected,'rejected');
-      }else Object.assign(FB,data);
-      saveFBLocal();renderSB();if(CW)renderMain(CW);updSt();
-      alert('反馈记录已加载');
+        process(data.approved,'approved');process(data.rejected,'rejected');
+      }else{Object.assign(FB,data);}
+      saveFBLocal();renderSB();
+      if(CW)renderMain(CW);
+      updSt();alert('反馈记录已加载');
     }catch{alert('反馈文件解析失败');}
   });
 }
+
 function updSt(){
   const wc=Object.keys(W).length;
   const apv=Object.values(FB).filter(f=>f.status==='approved').length;
   const rej=Object.values(FB).filter(f=>f.status==='rejected').length;
   document.getElementById('tb-st').textContent=`${wc} 个单词 | ${apv} 合格  ${rej} 不合格`;
 }
+
+// ═══ EXPORT ════════════════════════════════════════════
 function exportFB(){
   const approved=[],rejected=[],rejIds=[];
   Object.values(FB).forEach(f=>{
@@ -914,11 +927,14 @@ function exportFB(){
     approved,rejected,rejected_ids:rejIds};
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));
-  a.download=`wordart_feedback_${new Date().toISOString().slice(0,10)}.json`;a.click();
+  a.download=`wordart_feedback_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
 }
 
 // ═══ INIT ════════════════════════════════════════════
-if(location.protocol==='file:')document.getElementById('warn-banner').style.display='flex';
+if(location.protocol==='file:'){
+  document.getElementById('warn-banner').style.display='flex';
+}
 loadFBLocal();loadSettings();loadFilters();updSt();
 document.getElementById('fi-words').addEventListener('change',e=>{if(e.target.files[0])loadWordFile(e.target.files[0]);e.target.value='';});
 document.getElementById('fi-fb').addEventListener('change',e=>{if(e.target.files[0])loadFBFile(e.target.files[0]);e.target.value='';});
