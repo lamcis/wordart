@@ -1,0 +1,12 @@
+{
+  "name": "WordArt单词记艺",
+  "short_name": "WordArt",
+  "description": "用艺术品学单词",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f2ed",
+  "theme_color": "#ffffff",
+  "icons": [
+    {"src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>", "sizes": "any", "type": "image/svg+xml"}
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "exported_at": "2026-03-17T08:44:32.026Z",
+  "stats": {
+    "approved": 1,
+    "rejected": 1
+  },
+  "approved": [
+    {
+      "word": "Arabian",
+      "artwork_id": "archive_img-20250825-wa-0060",
+      "title": "Experience Paradise Living with Luxury Villas in North Goa",
+      "source": "archive",
+      "image_url": "https://archive.org/services/img/img-20250825-wa-0060",
+      "page_url": "https://archive.org/details/img-20250825-wa-0060",
+      "note": "啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊",
+      "timestamp": "2026-03-17T08:44:21.628Z"
+    }
+  ],
+  "rejected": [
+    {
+      "word": "Arabian",
+      "artwork_id": "archive_kochi-image-2",
+      "title": "",
+      "source": "archive",
+      "image_url": "",
+      "page_url": "",
+      "note": "",
+      "timestamp": "2026-03-17T08:44:26.573Z"
+    }
+  ],
+  "rejected_ids": [
+    "archive_kochi-image-2"
+  ]
+}
