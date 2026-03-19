@@ -6,7 +6,7 @@
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<title>聚艺(WordArt|单词-艺术)——借艺术学习词语，经词语发现世界</title>
+<title>聚艺(WordArt|词语-艺术)——借艺术学习词语，经词语发现世界</title>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <!-- 本地库文件 -->
 <script src="libs/jszip.min.js"></script>
@@ -328,7 +328,7 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
 </head>
 <body>
 <header id="tb">
-  <div id="tb-brand" onclick="toggleReadme()" style="cursor:pointer;" title="点击查看使用说明">WordArt<span>丨单词-艺术</span></div>
+  <div id="tb-brand" onclick="toggleReadme()" style="cursor:pointer;" title="点击查看使用说明">WordArt<span>丨词语-艺术</span></div>
   <div id="tb-center" style="cursor:pointer" onclick="toggleTbProgress()">
     <span id="tb-learn-txt">—</span>
   </div>
@@ -439,8 +439,8 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
     <button id="sb-expand-tab" onclick="expandSB()">▶</button>
     <div id="main-fixed"></div>
     <div id="main">
-      <div id="main-empty">从上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件 ⬆<br>⬅ 从左侧"选择单词"开始</div>
-      <div id="main-empty-mobile">⬆ 从上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件<br><br>⬇ 从下方"选择单词"开始</div>
+      <div id="main-empty">⬉点击屏幕左上角“WordArt”查看使用说明<br>从上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件 ⬆<br>⬅ 从左侧"选择单词"开始</div>
+      <div id="main-empty-mobile">⬉点击屏幕左上角“WordArt”查看使用说明<br>从上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件⬆<br><br>⬇ 从下方"选择单词"开始</div>
       
       <!-- 说明文档 -->
       <div id="readme-doc" style="display:none;padding:20px 40px;max-width:800px;margin:0 auto;overflow-y:auto;height:100%;">
@@ -930,7 +930,7 @@ function exitReviewDone(){
 function resetMain(){
   const mf=document.getElementById('main-fixed'),mn=document.getElementById('main');
   if(mf)mf.innerHTML='';
-  if(mn)mn.innerHTML='<div id="main-empty">← 从左侧选择单词开始</div><div id="main-empty-mobile">⬆ 从上方"加载词库"选择 TXT 或 JSON 文件<br><br>⬇ 从下方选择单词开始</div>';
+  if(mn)mn.innerHTML='<div id="main-empty">⬉ 点击屏幕左上角“WordArt”查看说明<br>⬅ 从左侧选择单词开始</div><div id="main-empty-mobile">⬆ 从上方"加载词库"选择 TXT 或 JSON 文件<br><br>⬇ 从下方选择单词开始</div>';
   CW=null;
 }
 
@@ -1445,7 +1445,7 @@ function toggleReadme(){
     } else {
       // 没有单词，显示空白提示
       main.innerHTML = `
-        <div id="main-empty-mobile">⬆ 从上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件<br><br> 点击"选择单词"开始</div>
+        <div id="main-empty-mobile">⬉点击屏幕左上角“WordArt”查看说明<br>⬆从上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件</div>
       `;
       if(mainFixed) mainFixed.style.display = 'none';
     }
