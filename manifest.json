@@ -1,8 +1,8 @@
 {
-  "name": "聚艺(WordArt|单词-艺术)——借艺术学习词语，经词语发现世界",
+  "name": "聚艺(WordArt|词语-艺术)——借艺术学习词语，经词语发现世界",
   "short_name": "聚艺WordArt",
   "description": "借艺术学习词语，经词语发现世界",
-  "start_url": "/",
+  "start_url": "/WordArt",
   "display": "standalone",
   "background_color": "#f4f2ed",
   "theme_color": "#ffffff",

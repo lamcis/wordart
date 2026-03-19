@@ -209,7 +209,7 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
   #total-bar{display:none}.tb-nav, #tb-mode-btn { display:none }
   body{font-size:13px}
   #main-empty{display:none}
-  #main-empty-mobile{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;color:var(--tx3);font-size:13px;line-height:2;flex:1;min-height:200px}
+  #main-empty-mobile{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 24px;color:var(--tx3);font-size:13px;line-height:2;flex:1;min-height:200px}
   #tb{padding:0 8px;gap:5px;height:44px}
   #tb-brand{font-size:13px}
   #tb-right{gap:4px}
@@ -219,7 +219,7 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
   #sb-expand-tab{display:none!important}
   #sb-top{display:none}
   #sb-mode{display:none}
-  #sb{position:fixed;bottom:40px;left:0;right:0;top:auto;width:100%!important;min-width:0!important;max-height:60vh;z-index:99;border-right:none;border-top:1px solid var(--bd);border-radius:16px 16px 0 0;transform:translateY(100%);transition:transform .25s ease;box-shadow:0 -4px 24px rgba(0,0,0,.12);overflow:hidden}
+  #sb{position:fixed;bottom:48px;left:0;right:0;top:auto;width:100%!important;min-width:0!important;max-height:60vh;z-index:99;border-right:none;border-top:1px solid var(--bd);border-radius:16px 16px 0 0;transform:translateY(100%);transition:transform .25s ease;box-shadow:0 -4px 24px rgba(0,0,0,.12);overflow:hidden}
   #sb.open{transform:translateY(0)}
   #sb-mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:98}
   #sb-mask.show{display:block}
@@ -250,7 +250,7 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
   #total-pct{font-size:10px;min-width:22px}
   #total-est{font-size:10px;min-width:56px}
   #tb-mode-btn{font-size:10px;padding:1px 5px}
-  #mob-bar{display:flex;align-items:stretch;position:fixed;bottom:0;left:0;right:0;height:40px;z-index:101;background:var(--surface);border-top:1px solid var(--bd)}
+  #mob-bar{display:flex;align-items:stretch;position:fixed;bottom:0;left:0;right:0;height:48px;z-index:101;background:var(--surface);border-top:1px solid var(--bd)}
   .mb-s{display:flex;align-items:center;justify-content:center;border-right:1px solid var(--bd)}
   .mb-s:last-child{border-right:none;border-left:1px solid var(--bd)}
   #mb-prev,
@@ -347,7 +347,7 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
   <div id="tb-daily-bar"><div id="tb-daily-fill" style="width:0%"></div></div>
 </header>
 <div id="warn-banner">
-  <span>⚠ 以 <code>file://</code> 打开，跨域请求被拦截。请用 <strong>npm run dev</strong> 后访问 <a href="http://localhost:5173" target="_blank">localhost:5173</a>，或部署到 GitHub Pages。</span>
+  <span>⚠ 以 <code>file://</code> 打开，跨域请求可能被拦截。或许把它添加到主屏幕上？</span>
   <button class="warn-close" onclick="document.getElementById('warn-banner').style.display='none'">×</button>
 </div>
 <div id="settings-panel">
@@ -443,23 +443,23 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
       <div id="main-empty-mobile">⬉点击屏幕左上角“WordArt”查看使用说明<br>从上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件⬆<br><br>⬇ 从下方"选择单词"开始</div>
       
       <!-- 说明文档 -->
-      <div id="readme-doc" style="display:none;padding:20px 40px;max-width:800px;margin:0 auto;overflow-y:auto;height:100%;">
+      <div id="readme-doc" style="display:none;padding:20px 48px;max-width:800px;margin:0 auto;overflow-y:auto;height:100%;">
         <div style="text-align:center;margin-bottom:30px;">
           <img src="wxzsm.png" alt="赞赏码" style="max-width:200px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
           <p style="margin-top:10px;font-size:13px;color:var(--tx2);">这里是我的赞赏码😢，我很需要钱🥢，希望大家多多支持🤝</p>
         </div>
         
         <p style="text-align:center;margin-bottom:20px;">
-          <a href="https://github.com/lamcis/wordart" target="_blank" style="color:var(--info);text-decoration:none;">📦 这里是该项目的GitHub发布页面</a>
+          <a href="https://github.com/lamcis/wordart" target="_blank" style="color:var(--info);text-decoration:none;">🖱 点击这里转到该项目的GitHub发布页面 🥰</br>⭐ 你的收藏也是对我的支持 🌏</a>
         </p>
         
         <div style="background:var(--info-bg);border:1px solid var(--info-bd);border-radius:var(--rl);padding:14px;margin-bottom:20px;">
-          <p style="margin:0;font-size:13px;color:var(--info);font-weight:500;">✨ 现已支持导入从Anki下载的apkg形式的词库。</p>
+          <p style="margin:0;font-size:13px;color:var(--info);font-weight:500;">✨ 现已支持导入从Anki下载的apkg形式的词库。</br>📲 此外，如果在手机端觉得频繁打开网页很麻烦，你也可以把聚艺保存在本地使用，方法：</br>Chrome：右上角或右下角浏览器设置➡添加到主屏幕</br>FireFox：右上角或右下角浏览器设置➡更多➡添加到主屏幕</br>Edge：右上角或右下角浏览器设置➡添加到此手机</p>
         </div>
         
         <div style="background:var(--surface2);border-radius:var(--rl);padding:16px;margin-bottom:20px;">
           <h3 style="margin:0 0 12px;font-size:14px;color:var(--tx);">📚 词库下载链接</h3>
-          <p style="margin:0 0 8px;font-size:12px;color:var(--tx2);">欢迎提供新的网址，提出建议和贡献。</p>
+          <p style="margin:0 0 8px;font-size:12px;color:var(--tx2);">欢迎提供新的网址，也欢迎在issue中提出建议和贡献。https://github.com/lamcis/wordart/issues</p>
           <div style="font-size:12px;line-height:2;">
             <p style="margin:8px 0;font-weight:500;color:var(--tx);">Anki词库：</p>
             <p style="margin:4px 0;padding-left:16px;"><a href="https://ankiweb.net/shared/decks" target="_blank" style="color:var(--info);">https://ankiweb.net/shared/decks</a></p>
@@ -930,7 +930,7 @@ function exitReviewDone(){
 function resetMain(){
   const mf=document.getElementById('main-fixed'),mn=document.getElementById('main');
   if(mf)mf.innerHTML='';
-  if(mn)mn.innerHTML='<div id="main-empty">⬉ 点击屏幕左上角“WordArt”查看说明<br>⬅ 从左侧选择单词开始</div><div id="main-empty-mobile">⬆ 从上方"加载词库"选择 TXT 或 JSON 文件<br><br>⬇ 从下方选择单词开始</div>';
+  if(mn)mn.innerHTML='<div id="main-empty">⬉ 点击屏幕左上角“WordArt”查看说明<br>从上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件⬆<br>⬅ 从左侧选择单词开始</div><div id="main-empty-mobile">⬉ 点击屏幕左上角“WordArt”查看说明<br>从上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件⬆ <br><br>⬇ 从下方选择单词开始</div>';
   CW=null;
 }
 
@@ -1445,7 +1445,7 @@ function toggleReadme(){
     } else {
       // 没有单词，显示空白提示
       main.innerHTML = `
-        <div id="main-empty-mobile">⬉点击屏幕左上角“WordArt”查看说明<br>⬆从上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件</div>
+        <div id="main-empty-mobile">⬉点击屏幕左上角“WordArt”查看说明<br>从上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件⬆</div>
       `;
       if(mainFixed) mainFixed.style.display = 'none';
     }
@@ -1456,23 +1456,27 @@ function toggleReadme(){
     
     // 重建说明文档内容
     main.innerHTML = `
-      <div id="readme-doc" style="display:block;padding:20px 40px;max-width:800px;margin:0 auto;overflow-y:auto;height:100%;">
+      <div id="readme-doc" style="display:block;padding:20px 48px;max-width:800px;margin:0 auto;overflow-y:auto;height:100%;">
+        <div style="text-align:center;margin-bottom:30px;">
+          <p style="margin-top:10px;font-size:13px;color:var(--tx2);">⬉点击屏幕左上角“WordArt”查看说明<br>从上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件⬆</p>
+        </div>
+        
         <div style="text-align:center;margin-bottom:30px;">
           <img src="wxzsm.png" alt="赞赏码" style="max-width:200px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
           <p style="margin-top:10px;font-size:13px;color:var(--tx2);">这里是我的赞赏码😢，我很需要钱🥢，希望大家多多支持🤝</p>
         </div>
         
         <p style="text-align:center;margin-bottom:20px;">
-          <a href="https://github.com/lamcis/wordart" target="_blank" style="color:var(--info);text-decoration:none;">📦 这里是该项目的GitHub发布页面</a>
+          <a href="https://github.com/lamcis/wordart" target="_blank" style="color:var(--info);text-decoration:none;">🖱 点击这里转到该项目的GitHub发布页面 🥰</br>⭐ 你的收藏也是对我的支持 🌏</a>
         </p>
         
         <div style="background:var(--info-bg);border:1px solid var(--info-bd);border-radius:var(--rl);padding:14px;margin-bottom:20px;">
-          <p style="margin:0;font-size:13px;color:var(--info);font-weight:500;">✨ 现已支持导入从Anki下载的apkg形式的词库。</p>
+          <p style="margin:0;font-size:13px;color:var(--info);font-weight:500;">✨ 现已支持导入从Anki下载的apkg形式的词库。</br>📲 此外，如果在手机端觉得频繁打开网页很麻烦，你也可以把聚艺保存在本地使用，方法：</br>Chrome：右上角或右下角浏览器设置➡添加到主屏幕</br>FireFox：右上角或右下角浏览器设置➡更多➡添加到主屏幕</br>Edge：右上角或右下角浏览器设置➡添加到此手机</p>
         </div>
         
         <div style="background:var(--surface2);border-radius:var(--rl);padding:16px;margin-bottom:20px;">
           <h3 style="margin:0 0 12px;font-size:14px;color:var(--tx);">📚 词库下载链接</h3>
-          <p style="margin:0 0 8px;font-size:12px;color:var(--tx2);">欢迎提供新的网址，提出建议和贡献。</p>
+          <p style="margin:0 0 8px;font-size:12px;color:var(--tx2);">欢迎提供新的网址，也欢迎在issue中提出建议和贡献。https://github.com/lamcis/wordart/issues</p>
           <div style="font-size:12px;line-height:2;">
             <p style="margin:8px 0;font-weight:500;color:var(--tx);">Anki词库：</p>
             <p style="margin:4px 0;padding-left:16px;"><a href="https://ankiweb.net/shared/decks" target="_blank" style="color:var(--info);">https://ankiweb.net/shared/decks</a></p>
