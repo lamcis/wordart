@@ -1182,6 +1182,7 @@ function renderSB(){
 // ═══ RENDER ═══════════════════════════════════════════
 function renderMainFixed(word){
   const mf=document.getElementById('main-fixed');if(!mf)return;
+  mf.style.display='';  // 清除内联display，恢复默认，修复左上角点击发行说明隐藏顶部单词栏后，再通过选择单词的单词列表点击单词，导致单词固定栏加载不出来
   const wd=W[word]||{};
   const apv=Object.values(FB).filter(f=>f.word===word&&f.status==='approved').length;
   const transHTML=(wd.translations||[]).map(t=>`<span class="w-tag"><span class="w-pos">${esc(t.type)}</span>${esc(t.translation)}</span>`).join('');
@@ -1444,8 +1445,7 @@ function toggleReadme(){
     } else {
       // 没有单词，显示空白提示
       main.innerHTML = `
-        <div id="main-empty" style="display:flex;">从上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件 ⬆<br>⬅ 从左侧"选择单词"开始</div>
-        <div id="main-empty-mobile">⬆ 从上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件<br><br>⬇ 从下方"选择单词"开始</div>
+        <div id="main-empty-mobile">⬆ 从上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件<br><br> 点击"选择单词"开始</div>
       `;
       if(mainFixed) mainFixed.style.display = 'none';
     }
@@ -1459,7 +1459,7 @@ function toggleReadme(){
       <div id="readme-doc" style="display:block;padding:20px 40px;max-width:800px;margin:0 auto;overflow-y:auto;height:100%;">
         <div style="text-align:center;margin-bottom:30px;">
           <img src="wxzsm.png" alt="赞赏码" style="max-width:200px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-          <p style="margin-top:10px;font-size:13px;color:var(--tx2);">这里是我的赞赏码😢，我很需要钱🤗，希望大家多多支持🤝</p>
+          <p style="margin-top:10px;font-size:13px;color:var(--tx2);">这里是我的赞赏码😢，我很需要钱🥢，希望大家多多支持🤝</p>
         </div>
         
         <p style="text-align:center;margin-bottom:20px;">
