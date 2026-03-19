@@ -55,8 +55,8 @@
 ## 开源与理念
 
 #### 开源自由
-该工具遵循 GPL3.0 协议，是开源自由软件。用户拥有 GPL3.0 协议下的全部自主权！
-- [GPL3.0协议的严肃中文翻译](https://zhuanlan.zhihu.com/p/608456168)
+该工具遵循 [GPL3.0](https://www.gnu.org/licenses/gpl-3.0.html) 协议，是开源自由软件。用户拥有 GPL3.0 协议下的全部自主权！
+- [GPL3.0协议的严肃中文翻译](https://jxself.org/translations/gpl-3.zh.shtml)
 - [GPL3.0协议的中文翻译，更容易理解的白话版](https://blog.csdn.net/wusuojiban/article/details/89108641)
 
 同时，作者也承诺通过长期、持续的更新与维护，来赢得全球使用者的关注、捐赠与支持。
