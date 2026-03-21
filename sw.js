@@ -1,4 +1,4 @@
-const CACHE='wa-v1';
+const CACHE='wa-va.2.0.0';
 const STATIC=['/index.html','/manifest.json','/libs/jszip.min.js','/libs/sql-asm.js','/wxzsm.png'];
 
 self.addEventListener('install',e=>{

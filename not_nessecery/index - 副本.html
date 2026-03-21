@@ -218,7 +218,7 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
   #sb-collapse-tab{display:none!important}
   #sb-expand-tab{display:none!important}
   #sb-top{display:none}
-  /* #sb-mode{display:none} */
+  #sb-mode{display:none}
   #sb{position:fixed;bottom:48px;left:0;right:0;top:auto;width:100%!important;min-width:0!important;max-height:60vh;z-index:99;border-right:none;border-top:1px solid var(--bd);border-radius:16px 16px 0 0;transform:translateY(100%);transition:transform .25s ease;box-shadow:0 -4px 24px rgba(0,0,0,.12);overflow:hidden}
   #sb.open{transform:translateY(0)}
   #sb-mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:98}
@@ -338,7 +338,6 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
       <button class="btn" onclick="toggleSettingsMenu()">⚙</button>
       <div id="settings-menu">
         <div class="sm-item" onclick="openSettingsPanel()">⚙ 设置选项</div>
-        <div class="sm-item" onclick="showChangelog();closeSettingsMenu();">📢 查看更新说明</div>
         <div class="sm-sep"></div>
         <div class="sm-item" onclick="document.getElementById('fi-fb').click();closeSettingsMenu()">📂 导入成果</div>
         <div class="sm-item" onclick="exportFB();closeSettingsMenu()">💾 导出成果</div>
@@ -357,7 +356,7 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
   <div class="sp-row">
     <div class="sp-label">每日单词数</div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <input class="sp-inp" type="text" id="sp-daily" style="width:180px" placeholder="（建议不超过30个）">
+      <input class="sp-inp" type="number" id="sp-daily" min="1" max="200" style="width:180px" placeholder="（建议不超过30个）">
       <button class="btn" onclick="saveDailyGoal()">确认</button>
       <span id="sp-daily-saved" style="font-size:12px;color:var(--ok);display:none">✓</span>
     </div>
@@ -431,19 +430,9 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
     </div>
     <div id="sb-mode">
       <button class="sbm-btn act" id="sbm-learn" onclick="setSBMode('learn')">每日学习</button>
-      <button class="sbm-btn" id="sbm-today-review" onclick="setSBMode('today-review')">今日复习</button>
       <button class="sbm-btn" id="sbm-review" onclick="setSBMode('review')">复习序列</button>
     </div>
-    <div id="sb-search">
-      <div style="display:flex;align-items:center;gap:4px;">
-        <input id="sb-inp" type="text" placeholder="搜索或输入单词..." style="flex:1;">
-        <button class="btn" onclick="searchWord()" title="搜索" style="padding:3px 8px;font-size:12px;">↩</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:4px;margin-top:4px;justify-content:flex-end;">
-        <button class="btn" onclick="toggleAllGroups()" id="toggle-all-btn" title="全部展开/收起" style="padding:2px 6px;font-size:11px;">▼ 收起</button>
-        <button class="btn" onclick="setSortOrder('original')" title="原始顺序" style="padding:2px 6px;font-size:11px;">↺</button>
-      </div>
-    </div>
+    <div id="sb-search"><input type="text" id="sb-inp" placeholder="搜索单词…"></div>
     <div id="sb-list"><div class="sb-empty">加载 JSON 或 TXT<br>词库文件即可开始</div></div>
   </aside>
   <div id="main-wrap">
@@ -468,16 +457,6 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
   <span id="total-est">—</span>
   <button id="tb-mode-btn" onclick="toggleMode()">⥮ 顺序</button>
   <button class="tb-nav" onclick="navWord(1)" title="→">→</button>
-</div>
-<!-- 更新说明弹窗 -->
-<div id="changelog-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:2000;align-items:center;justify-content:center;">
-  <div style="background:var(--surface);width:90%;max-width:600px;max-height:80vh;border-radius:var(--rl);overflow:hidden;display:flex;flex-direction:column;">
-    <div style="padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0;font-size:16px;">📢 更新说明</h3>
-      <button onclick="closeChangelog()" style="background:none;border:none;font-size:20px;color:var(--tx3);cursor:pointer;">×</button>
-    </div>
-    <div id="changelog-content" style="padding:20px;overflow-y:auto;flex:1;"></div>
-  </div>
 </div>
 
 <input type="file" id="fi-words" accept=".txt,.json,.apkg" style="display:none">
@@ -508,13 +487,10 @@ let USE_BING_WIKIART=false;
 // Active sources set (internal IDs)
 const AS=new Set(['wikipedia','met','archive','wiki']);
 let FILTER_TYPES=new Set(),FILTER_TAGS=[];
-let WORD_MODE = 'sequential';  // 'sequential', 'random', 'study'
-let DAILY_GOAL=20;
+let RANDOM_MODE=false,DAILY_GOAL=20;
 let APP_MODE='learn',SB_MODE='learn';
 let SM2={},LEARN_TRACK={date:'',learnedToday:[]},REVIEW_TRACK={date:'',reviewedToday:[]};
 let REVIEW_QUEUE=[],REVIEW_IDX=0,PRE_REVIEW_WORD=null;
-let SORT_ORDER = 'alpha';  // 'alpha', 'original'
-let ALL_COLLAPSED = false;
 
 // ═══ UTILS ════════════════════════════════════════════
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -522,21 +498,8 @@ function sid(s){return String(s).replace(/[^a-z0-9]/gi,'_')}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function setTxt(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
 function getTodayStr(){return new Date().toISOString().slice(0,10);}
-function sortWords(words){
-  let filtered = words.slice();
-  
-  // 学习模式：过滤掉已学的单词
-  if(WORD_MODE === 'study'){
-    filtered = filtered.filter(w => !SM2[w] || !SM2[w].nextReview);
-  }
-  // 原始顺序：保持导入顺序（不排序）
-  if(SORT_ORDER === 'original'){
-    return filtered;  // 不排序
-  }
-  
-  // 字母排序（随机逻辑由 getSortedWords 处理）
-  return filtered.sort((a,b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-}
+function sortWords(words){return words.slice().sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));}
+
 function findMatchCtx(fields,word){
   const e=word.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   const re=/[^\x00-\x7F]/.test(word)?new RegExp(word,'i'):new RegExp('(?<![a-zA-Z])'+e+'(?![a-zA-Z])','i');
@@ -567,25 +530,10 @@ function sm2Update(d,q){
   return{reps,interval,ef,nextReview:next.toISOString().slice(0,10),lastReview:getTodayStr()};
 }
 function sm2Init(word){if(SM2[word])return;SM2[word]=sm2Update(null,4);saveSM2();}
-// 获取今日到期的单词（包括过期的）
-function getTodayDueWords(){
-  const today = getTodayStr();
-  return Object.keys(W).filter(w => {
-    const sm = SM2[w];
-    if(!sm) return false;
-    return sm.nextReview <= today;  // 只要到期的
-  }).sort((a,b) => (SM2[a].nextReview||'').localeCompare(SM2[b].nextReview||''));
-}
-
-// 获取所有复习队列中的单词
-function getAllReviewWords(){
-  return Object.keys(W).filter(w => SM2[w])
-    .sort((a,b) => (SM2[a].nextReview||'').localeCompare(SM2[b].nextReview||''));
-}
-
-// 兼容旧代码：getReviewQueueWords 指向今日到期
 function getReviewQueueWords(){
-  return getTodayDueWords();
+  const today=getTodayStr();
+  return Object.keys(W).filter(w=>SM2[w]&&SM2[w].nextReview<=today)
+    .sort((a,b)=>(SM2[a].nextReview||'').localeCompare(SM2[b].nextReview||''));
 }
 function checkDates(){
   const today=getTodayStr();
@@ -597,18 +545,7 @@ function checkDates(){
 function loadFBLocal(){try{FB=JSON.parse(localStorage.getItem(LS.FB)||'{}');}catch{FB={}}}
 function saveFBLocal(){try{localStorage.setItem(LS.FB,JSON.stringify(FB));}catch{}}
 function fbKey(w,id){return w+'||'+id}
-function setFB(w,id,status,note,artData){
-  FB[fbKey(w,id)]={word:w,id,status,note:note||'',...artData,ts:new Date().toISOString()};
-  saveFBLocal();
-  
-  // 检查是否完成学习
-  if(status==='approved'){
-    setTimeout(()=>{
-      checkLearnComplete(w);
-      updDot(w);
-    }, 100);
-  }
-}
+function setFB(w,id,status,note,artData){FB[fbKey(w,id)]={word:w,id,status,note:note||'',...artData,ts:new Date().toISOString()};saveFBLocal();}
 function getFB(w,id){return FB[fbKey(w,id)]||null}
 function loadSM2(){try{SM2=JSON.parse(localStorage.getItem(LS.SM2)||'{}');}catch{SM2={}}}
 function saveSM2(){try{localStorage.setItem(LS.SM2,JSON.stringify(SM2));}catch{}}
@@ -637,29 +574,11 @@ function saveProxySettings(){
   localStorage.setItem(LS.SET,JSON.stringify({...s,proxySrcs:[...PROXY_SRCS],useBingWikiArt:USE_BING_WIKIART}));
 }
 function saveDailyGoal(){
-  const val = document.getElementById('sp-daily').value.trim();
-  
-  // 检查是否是"清除数据"
-  if(val === '清除数据'){
-    clearAllData();
-    return;
-  }
-  
-  // 验证是否是有效数字
-  const num = parseInt(val);
-  if(isNaN(num) || num < 1 || num > 200){
-    alert('请输入1-200之间的数字');
-    document.getElementById('sp-daily').value = DAILY_GOAL;
-    return;
-  }
-  
-  DAILY_GOAL = num;
-  localStorage.setItem('daily_goal', DAILY_GOAL);
-  const savedEl = document.getElementById('sp-daily-saved');
-  if(savedEl){
-    savedEl.style.display = 'inline';
-    setTimeout(() => savedEl.style.display = 'none', 2000);
-  }
+  const v=parseInt(document.getElementById('sp-daily').value)||20;
+  DAILY_GOAL=Math.max(1,Math.min(200,v));
+  const s=JSON.parse(localStorage.getItem(LS.SET)||'{}');
+  localStorage.setItem(LS.SET,JSON.stringify({...s,dailyGoal:DAILY_GOAL}));
+  const sv=document.getElementById('sp-daily-saved');sv.style.display='inline';setTimeout(()=>sv.style.display='none',2000);
   updProgress();
 }
 function loadFilters(){try{const f=JSON.parse(localStorage.getItem(LS.FLT)||'{}');FILTER_TYPES=new Set(f.types||[]);FILTER_TAGS=f.tags||[];}catch{}}
@@ -677,19 +596,7 @@ function wordStat(word){
 }
 function dotColor(s){return{none:'var(--bd2)',partial:'#d4920a','partial-note':'var(--info)',complete:'var(--ok)'}[s]||'var(--bd2)';}
 function checkLearnComplete(word){
-  if(wordStat(word)==='complete'){
-    checkDates();
-    if(!LEARN_TRACK.learnedToday.includes(word)){
-      LEARN_TRACK.learnedToday.push(word);
-      saveLearnTrack();
-      updProgress();
-    }
-    // 加入复习队列
-    if(!SM2[word]){
-      sm2Init(word);
-      updProgress();
-    }
-  }
+  if(wordStat(word)==='complete'){checkDates();if(!LEARN_TRACK.learnedToday.includes(word)){LEARN_TRACK.learnedToday.push(word);saveLearnTrack();updProgress();}}
 }
 // ═══ Mobile Tab Bar Center ══════════════════════════════════════
 let TB_SHOW_TOTAL=false;
@@ -721,21 +628,7 @@ function toggleSettingsMenu(){const m=document.getElementById('settings-menu');m
 function closeMenuOut(e){if(!document.getElementById('settings-wrap').contains(e.target))closeSettingsMenu();}
 function closeSettingsMenu(){document.getElementById('settings-menu').classList.remove('open');}
 function openSettingsPanel(){closeSettingsMenu();const p=document.getElementById('settings-panel');p.style.display=p.style.display==='block'?'none':'block';}
-function clearAllData(){
-  if(!confirm('⚠️ 警告：此操作将清除所有数据！\n\n包括：\n• 词库\n• 学习进度\n• 复习记录\n• 图片标注\n\n确定要继续吗？')){
-    return;
-  }
-  
-  if(!confirm('⚠️ 最后确认：数据无法恢复！\n\n真的要清除所有数据吗？')){
-    return;
-  }
-  
-  // 清除所有localStorage
-  localStorage.clear();
-  
-  alert('✓ 所有数据已清除\n\n页面将刷新');
-  location.reload();
-}
+
 // ═══ REJECTED MODAL ═══════════════════════════════════
 function openRejModal(){
   const list=document.getElementById('rej-list');
@@ -804,76 +697,18 @@ function updProgress(){
   const estDays=studied>=totalW?'已全部学过':DAILY_GOAL>0?`预计还需 ${Math.ceil((totalW-studied)/DAILY_GOAL)} 天`:'—';
   document.getElementById('total-bar-fill').style.width=totalPct+'%';
   setTxt('total-pct',totalPct+'%');setTxt('total-est',estDays);
-  const todayLearned = LEARN_TRACK.learnedToday.length;
-
-  if(todayLearned >= DAILY_GOAL && todayLearned > 0){
-    const lastReminder = localStorage.getItem('last_export_reminder');
-    const today = new Date().toDateString();
-    if(lastReminder !== today){
-      localStorage.setItem('last_export_reminder', today);
-      setTimeout(() => {
-        if(confirm('🎉 恭喜完成今日学习目标！\n\n建议立即导出进度防止数据丢失。\n\n是否现在导出？')){
-          exportFB();
-        }
-      }, 500);
-    }
-  }
-}
-function isToday(date){
-  const today = new Date();
-  return date.getDate() === today.getDate() &&
-         date.getMonth() === today.getMonth() &&
-         date.getFullYear() === today.getFullYear();
 }
 
 // ═══ REVIEW MODE ══════════════════════════════════════
 function enterReviewMode(){
   closeSB();
-  let todayDue = getTodayDueWords();
-  
-  if(todayDue.length > 0){
-    // 有今日到期的，进入今日复习
-    APP_MODE = 'review';
-    REVIEW_QUEUE = todayDue;
-    REVIEW_IDX = 0;
-    PRE_REVIEW_WORD = CW;
-    setSBMode('today-review');
-    showReviewWord(todayDue[0]);
-    
-    // 提示用户
-    setTimeout(() => {
-      alert(`📅 今日复习模式\n\n今天有 ${todayDue.length} 个单词到期\n完成后可切换到"复习序列"查看全部`);
-    }, 300);
-  } else {
-    // 没有到期的，进入复习序列
-    let allReview = getAllReviewWords();
-    if(!allReview.length){
-      alert('还没有学过任何单词！\n请先学习一些单词。');
-      return;
-    }
-    
-    APP_MODE = 'review';
-    REVIEW_QUEUE = allReview;
-    REVIEW_IDX = 0;
-    PRE_REVIEW_WORD = CW;
-    setSBMode('review');
-    showReviewWord(allReview[0]);
-    
-    // 提示用户
-    setTimeout(() => {
-      alert(`📚 复习序列模式\n\n共有 ${allReview.length} 个单词在复习队列中\n按到期时间排序`);
-    }, 300);
-  }
+  let queue=getReviewQueueWords();
+  if(!queue.length)queue=Object.keys(W).filter(w=>SM2[w]).sort((a,b)=>(SM2[a].lastReview||'').localeCompare(SM2[b].lastReview||''));
+  if(!queue.length){alert('还没有学过任何单词！请先学习一些单词。');return;}
+  APP_MODE='review';REVIEW_QUEUE=queue;REVIEW_IDX=0;PRE_REVIEW_WORD=CW;
+  setSBMode('review');showReviewWord(queue[0]);
 }
 function showReviewWord(word){
-    // 如果没有队列，自动初始化
-  if(!REVIEW_QUEUE || !REVIEW_QUEUE.length){
-    let queue = getReviewQueueWords();
-    if(!queue.length) queue = Object.keys(W).filter(w=>SM2[w]).sort((a,b)=>(SM2[a].lastReview||'').localeCompare(SM2[b].lastReview||''));
-    REVIEW_QUEUE = queue;
-    REVIEW_IDX = queue.indexOf(word);
-    if(REVIEW_IDX === -1) REVIEW_IDX = 0;
-  }
   CW=word;
   document.querySelectorAll('.wi').forEach(el=>el.classList.toggle('act',el.dataset.w===word));
   setTxt('mb-wnm',word);setTxt('mb-wlbl','复习中');
@@ -918,16 +753,7 @@ function resetMain(){
 // ═══ SIDEBAR MODE ══════════════════════════════════════
 function setSBMode(mode){
   SB_MODE=mode;
-  
-  // 切换到复习相关模式时，自动设置 APP_MODE
-  if(mode === 'review' || mode === 'today-review'){
-    APP_MODE = 'review';
-  } else {
-    APP_MODE = 'learn';
-  }
-  
   document.getElementById('sbm-learn')?.classList.toggle('act',mode==='learn');
-  document.getElementById('sbm-today-review')?.classList.toggle('act',mode==='today-review');
   document.getElementById('sbm-review')?.classList.toggle('act',mode==='review');
   renderSB();
 }
@@ -935,7 +761,7 @@ function setSBMode(mode){
 // ═══ NAVIGATION ═══════════════════════════════════════
 function getSortedWords(){
   const words=sortWords(Object.keys(W));
-  if(WORD_MODE === 'RANDOM'){
+  if(RANDOM_MODE){
     const seed=parseInt(getTodayStr().replace(/-/g,''))%1000000;let arr=[...words];
     for(let i=arr.length-1;i>0;i--){const j=(seed^(i*2654435761>>>0))%(i+1);[arr[i],arr[j]]=[arr[j],arr[i]];}
     return arr;
@@ -949,7 +775,7 @@ function navWord(dir){
     return;
   }
   const words=getSortedWords();if(!words.length)return;
-  if(WORD_MODE === 'RANDOM'&&dir!==0){
+  if(RANDOM_MODE&&dir!==0){
     const ridx=Math.floor(Math.random()*words.length);
     if(words[ridx])selWord(words[ridx],true);
     return;
@@ -958,63 +784,20 @@ function navWord(dir){
   if(words[ni])selWord(words[ni],true);
 }
 function toggleMode(){
-  // 三态循环：顺序 -> 随机 -> 学习 -> 顺序
-  if(WORD_MODE === 'sequential'){
-    WORD_MODE = 'random';
-  } else if(WORD_MODE === 'random'){
-    WORD_MODE = 'study';
-  } else {
-    WORD_MODE = 'sequential';
-  }
-  
-  // 更新UI
-  updateModeUI();
-  
-  // 如果在学习模式，切换到下一个单词（避免显示已学单词）
-  if(WORD_MODE === 'study' && CW && SM2[CW]){
-    navWord(1);
-  }
-}
-
-function updateModeUI(){
-  let sym, lbl, bgColor, textColor;
-  
-  if(WORD_MODE === 'sequential'){
-    sym = '⥮';
-    lbl = '顺序';
-    bgColor = 'transparent';
-    textColor = 'var(--tx3)';
-  } else if(WORD_MODE === 'random'){
-    sym = '⤭';
-    lbl = '随机';
-    bgColor = '#1a1815';
-    textColor = '#fff';
-  } else {  // study
-    sym = '✎';
-    lbl = '学习';
-    bgColor = 'var(--info)';
-    textColor = '#fff';
-  }
-  
-  // 更新顶部按钮
-  setTxt('tb-mode-btn', sym + ' ' + lbl);
-  const tbBtn = document.getElementById('tb-mode-btn');
-  if(tbBtn){
-    tbBtn.style.background = bgColor;
-    tbBtn.style.color = textColor;
-  }
-  
-  // 更新底部按钮
-  setTxt('mb-mode-sym', sym);
-  setTxt('mb-mode-lbl', lbl);
-  const modeBtn = document.getElementById('mb-mode');
+  RANDOM_MODE=!RANDOM_MODE;
+  const sym=RANDOM_MODE?'⤭':'⥮';
+  const lbl=RANDOM_MODE?'随机':'顺序';
+  setTxt('tb-mode-btn',(RANDOM_MODE?'⤭':'⥮')+' '+(RANDOM_MODE?'随机':'顺序'));
+  setTxt('mb-mode-sym',sym);
+  setTxt('mb-mode-lbl',lbl);
+  const modeBtn=document.getElementById('mb-mode');
   if(modeBtn){
-    modeBtn.style.background = bgColor;
+    modeBtn.style.background=RANDOM_MODE?'#1a1815':'transparent';
+    const symEl=document.getElementById('mb-mode-sym');
+    const lblEl=document.getElementById('mb-mode-lbl');
+    if(symEl)symEl.style.color=RANDOM_MODE?'#fff':'var(--tx3)';
+    if(lblEl)lblEl.style.color=RANDOM_MODE?'rgba(255,255,255,0.7)':'var(--tx3)';
   }
-  const symEl = document.getElementById('mb-mode-sym');
-  const lblEl = document.getElementById('mb-mode-lbl');
-  if(symEl) symEl.style.color = textColor;
-  if(lblEl) lblEl.style.color = WORD_MODE === 'sequential' ? 'var(--tx3)' : 'rgba(255,255,255,0.7)';
 }
 
 // ═══ TTS ══════════════════════════════════════════════
@@ -1185,130 +968,24 @@ function removeFilterTag(i){FILTER_TAGS.splice(i,1);saveFilters();renderFilterBa
 function clearFilters(){FILTER_TYPES.clear();FILTER_TAGS=[];saveFilters();renderFilterBar();if(CW){resetSourceSearch(CW);[...AS].forEach(src=>searchAndAppend(CW,src,MAX));}}
 function applyFilters(){document.querySelectorAll('.art-card').forEach(card=>{const obj=(CARDS[CW]||[]).find(c=>(c.art||c).id===card.dataset.id);card.classList.toggle('hidden-filter',!!(obj&&!cardMatchesFilter(obj)));});}
 
-//搜索增强
-
-function toggleAllGroups(){
-  ALL_COLLAPSED = !ALL_COLLAPSED;
-  const btn = document.getElementById('toggle-all-btn');
-  
-  document.querySelectorAll('.ag-body').forEach(body => {
-    if(ALL_COLLAPSED){
-      body.classList.add('clpsd');
-    } else {
-      body.classList.remove('clpsd');
-    }
-  });
-  
-  document.querySelectorAll('.ag-arr').forEach(arr => {
-    arr.style.transform = ALL_COLLAPSED ? 'rotate(0deg)' : 'rotate(90deg)';
-  });
-  
-  if(btn){
-    btn.textContent = ALL_COLLAPSED ? '▶ 展开' : '▼ 收起';
-  }
-}
-
-function setSortOrder(order){
-  SORT_ORDER = order;
-  renderSB();
-}
-function searchWord(){
-  const input = document.getElementById('sb-inp');
-  const word = input.value.trim().toLowerCase();
-  
-  if(!word) return;
-  
-  if(W[word]){
-    // 单词已存在，直接选择
-    selWord(word);
-    input.value = '';
-    SQ = '';
-  } else {
-    // 单词不存在，显示页面并提供添加按钮
-    CW = word;
-    renderMainFixed(word, true);  // 传入 true 表示是新词
-    renderScrollArea(word);
-    input.value = '';
-    SQ = '';
-  }
-}
-function addWordToLibrary(word){
-  if(!word || W[word]) return;
-  
-  W[word] = {word: word};
-  saveWordData();
-  renderSB();
-  selWord(word);  // 重新加载，移除"加至词库"按钮
-  alert('✓ 已添加到词库！');
-}
 // ═══ SIDEBAR ══════════════════════════════════════════
 function updDot(word){document.querySelectorAll(`.wi[data-w="${CSS.escape(word)}"] .wi-dot`).forEach(d=>{d.style.background=dotColor(wordStat(word));});}
 function renderSB(){
   const allWords=sortWords(Object.keys(W)),q=SQ.toLowerCase().trim();
-  
-  // 今日复习模式
-  if(SB_MODE==='today-review'){
-    let queue = getTodayDueWords();  // 只显示今日到期的
-    const disp = q ? queue.filter(w=>w.toLowerCase().includes(q)) : queue;
-    
-    if(!disp.length){
-      document.getElementById('sb-list').innerHTML='<div class="sb-empty">今天没有到期的单词<br>🎉 可以学习新单词了</div>';
-      return;
-    }
-    
-    document.getElementById('sb-list').innerHTML = disp.map(w=>{
-      const done = REVIEW_TRACK.reviewedToday.includes(w);
-      const int = SM2[w] ? SM2[w].interval+'d' : 'new';
-      const overdue = SM2[w] && SM2[w].nextReview < getTodayStr();
-      return `<div class="wi${CW===w?' act':''} ${done?'rev-done':''}" onclick="${APP_MODE==='review'?`showReviewWord('${esc(w)}')`:`selWord('${esc(w)}')`}" data-w="${esc(w)}">
-        <span class="wi-nm">${esc(w)}${overdue ? ' ⚠️' : ''}</span>
-        <span class="wi-int">${int}</span>
-        <span class="wi-dot" style="background:${done?'var(--ok)':'var(--warn-bd)'}"></span>
-      </div>`;
-    }).join('');
-    return;
-  }
-
-  // 复习序列模式
   if(SB_MODE==='review'){
-    let queue = getAllReviewWords();  // 显示所有复习单词
-    const disp = q ? queue.filter(w=>w.toLowerCase().includes(q)) : queue;
-    
-    if(!disp.length){
-      document.getElementById('sb-list').innerHTML='<div class="sb-empty">暂无复习单词<br>请先学习一些单词</div>';
-      return;
-    }
-    
-    document.getElementById('sb-list').innerHTML = disp.map(w=>{
-      const done = REVIEW_TRACK.reviewedToday.includes(w);
-      const int = SM2[w] ? SM2[w].interval+'d' : 'new';
-      const today = getTodayStr();
-      const dueStatus = SM2[w].nextReview < today ? '⚠️' : (SM2[w].nextReview === today ? '📅' : '');
-      
-      return `<div class="wi${CW===w?' act':''} ${done?'rev-done':''}" onclick="${APP_MODE==='review'?`showReviewWord('${esc(w)}')`:`selWord('${esc(w)}')`}" data-w="${esc(w)}">
-        <span class="wi-nm">${esc(w)} ${dueStatus}</span>
-        <span class="wi-int">${int}</span>
-        <span class="wi-dot" style="background:${done?'var(--ok)':'var(--warn-bd)'}"></span>
-      </div>`;
+    let queue=getReviewQueueWords();
+    if(!queue.length)queue=Object.keys(W).filter(w=>SM2[w]).sort((a,b)=>(SM2[a].lastReview||'').localeCompare(SM2[b].lastReview||''));
+    const disp=q?queue.filter(w=>w.toLowerCase().includes(q)):queue;
+    if(!disp.length){document.getElementById('sb-list').innerHTML='<div class="sb-empty">暂无复习单词<br>请先学习一些单词</div>';return;}
+    document.getElementById('sb-list').innerHTML=disp.map(w=>{
+      const done=REVIEW_TRACK.reviewedToday.includes(w);
+      const int=SM2[w]?SM2[w].interval+'d':'new';
+      return`<div class="wi${CW===w?' act':''} ${done?'rev-done':''}" onclick="${APP_MODE==='review'?`showReviewWord('${esc(w)}')`:`selWord('${esc(w)}')`}" data-w="${esc(w)}"><span class="wi-nm">${esc(w)}</span><span class="wi-int">${int}</span><span class="wi-dot" style="background:${done?'var(--ok)':'var(--warn-bd)'}"></span></div>`;
     }).join('');
     return;
   }
-  
-  // 后续代码保持不变...
   if(!allWords.length){document.getElementById('sb-list').innerHTML='<div class="sb-empty">加载 JSON 或 TXT<br>单词文件即可开始</div>';return;}
   const filtered=q?allWords.filter(w=>w.toLowerCase().includes(q)):allWords;
-  
-  if(SORT_ORDER === 'original'){
-    const html = filtered.map(w => 
-      `<div class="wi${CW===w?' act':''}" onclick="selWord('${esc(w)}')" data-w="${esc(w)}">
-        <span class="wi-nm">${esc(w)}</span>
-        <span class="wi-dot" style="background:${dotColor(wordStat(w))}"></span>
-      </div>`
-    ).join('');
-    document.getElementById('sb-list').innerHTML = html;
-    return;
-  }
-  
   const groups={};filtered.forEach(w=>{const l=w[0].toUpperCase();(groups[l]=groups[l]||[]).push(w);});
   let html='';
   Object.keys(groups).sort().forEach(letter=>{
@@ -1319,20 +996,13 @@ function renderSB(){
 }
 
 // ═══ RENDER ═══════════════════════════════════════════
-function renderMainFixed(word, isNewWord = false){
-  const mf = document.getElementById('main-fixed');
-  if(!mf) return;
-  mf.style.display = '';
-  
-  const wd = W[word] || {};
-  const apv = Object.values(FB).filter(f=>f.word===word&&f.status==='approved').length;
-  const apvHint = apv === 0 ? '<span style="font-size:10px;color:var(--tx3);margin-left:auto;line-height:1.4;display:inline-block;align-self:flex-start;text-align:right;">选3张图片打勾并<br>写说明来完成学习</span>' : '';
-  const transHTML = (wd.translations||[]).map(t=>`<span class="w-tag"><span class="w-pos">${esc(t.type)}</span>${esc(t.translation)}</span>`).join('');
-  
-  // 新词添加按钮
-  const addBtn = isNewWord ? '<button class="btn" onclick="addWordToLibrary(\'' + esc(word) + '\')" style="border:1px solid var(--info);color:var(--info);padding:3px 8px;font-size:11px;margin-left:6px;">+ 加至词库</button>' : '';
-  
-  mf.innerHTML = `<div id="w-hdr"><div id="w-hdr-top"><div id="w-big">${esc(word)}</div>${addBtn}<button class="tts-btn" onclick="speakWord('${esc(word)}')" title="朗读">🔊</button>${transHTML}${apv>0?`<span class="w-apv">✓ ${apv} 合格</span>`:''}${apvHint}</div></div>`;
+function renderMainFixed(word){
+  const mf=document.getElementById('main-fixed');if(!mf)return;
+  mf.style.display='';  // 清除内联display，恢复默认，修复左上角点击发行说明隐藏顶部单词栏后，再通过选择单词的单词列表点击单词，导致单词固定栏加载不出来
+  const wd=W[word]||{};
+  const apv=Object.values(FB).filter(f=>f.word===word&&f.status==='approved').length;
+  const transHTML=(wd.translations||[]).map(t=>`<span class="w-tag"><span class="w-pos">${esc(t.type)}</span>${esc(t.translation)}</span>`).join('');
+  mf.innerHTML=`<div id="w-hdr"><div id="w-hdr-top"><div id="w-big">${esc(word)}</div><button class="tts-btn" onclick="speakWord('${esc(word)}')" title="朗读">🔊</button>${transHTML}${apv>0?`<span class="w-apv">✓ ${apv} 合格</span>`:''}</div></div>`;
 }
 function renderScrollArea(word){
   const mn=document.getElementById('main');if(!mn)return;
@@ -1371,9 +1041,9 @@ function renderScrollArea(word){
     <div id="src-status" style="display:none"></div>
     <div id="filter-bar"></div>
     <div id="review-rate" style="display:none"><span class="rr-lbl">记忆程度：</span><button class="rr-btn rr-0" onclick="rateWord(0)">🚫 忘了</button><button class="rr-btn rr-3" onclick="rateWord(3)">😕 模糊</button><button class="rr-btn rr-4" onclick="rateWord(4)">✓ 记住了</button><button class="rr-btn rr-5" onclick="rateWord(5)">⭐ 很熟</button></div>
-    <div id="art-area"><div id="art-grid-wr">${cards.length?'<div class="art-grid">'+cards.map(c=>renderCard(word,c)).join('')+'</div>':'<div class="no-art">正在搜索艺术品…<br><small>若长时间无结果，查看来源状态行了解原因</small><br><br><button class="btn" onclick="markWordAsLearned(\''+esc(word)+'\')" style="margin-top:12px;background:var(--ok);color:#fff;border-color:var(--ok);">✓ 标记为已学习</button></div>'}</div></div>`;
+    <div id="art-area"><div id="art-grid-wr">${cards.length?'<div class="art-grid">'+cards.map(c=>renderCard(word,c)).join('')+'</div>':'<div class="no-art">正在搜索艺术品…<br><small>若长时间无结果，查看来源状态行了解原因</small></div>'}</div></div>`;
   renderFilterBar();renderSrcStatus(word);bindCardEvents(word);applyFilters();
-  if(APP_MODE==='review' || SB_MODE==='today-review')showRevRating(true);
+  if(APP_MODE==='review')showRevRating(true);
 }
 function sortedCards(word){
   const cards=CARDS[word]||[];
@@ -1454,38 +1124,9 @@ function updateCardStatus(word,id,status){
   if(CW===word){
     const apv=Object.values(FB).filter(f=>f.word===word&&f.status==='approved').length;
     const hdrTop=document.getElementById('w-hdr-top');
-    
-    // 移除旧的提示元素（避免重复）
-    hdrTop?.querySelectorAll('span:not(.w-tag):not(.w-pos):not(.w-apv)').forEach(el => {
-      if(el.textContent.includes('选3张图片')){
-        el.remove();
-      }
-    });
-    
     let apvEl=hdrTop?.querySelector('.w-apv');
-    
-    if(apv > 0){
-      // 有合格图片：显示合格数，移除提示
-      if(apvEl){
-        apvEl.textContent='✓ '+apv+' 合格';
-      } else if(hdrTop){
-        const s=document.createElement('span');
-        s.className='w-apv';
-        s.textContent='✓ '+apv+' 合格';
-        hdrTop.appendChild(s);
-      }
-    } else {
-      // 没有合格图片：移除合格标签，添加提示
-      if(apvEl){
-        apvEl.remove();
-      }
-      if(hdrTop){
-        const hint = document.createElement('span');
-        hint.style.cssText = 'font-size:10px;color:var(--tx3);margin-left:auto;line-height:1.4;display:inline-block;align-self:flex-start;text-align:right;';
-        hint.innerHTML = '选3张图片打勾并<br>写说明来完成学习';
-        hdrTop.appendChild(hint);
-      }
-    }
+    if(apvEl)apvEl.textContent='✓ '+apv+' 合格';
+    else if(apv>0&&hdrTop){const s=document.createElement('span');s.className='w-apv';s.textContent='✓ '+apv+' 合格';hdrTop.appendChild(s);}
   }
   updDot(word);checkLearnComplete(word);
 }
@@ -1509,8 +1150,6 @@ async function removeCard(word,id,src){
 async function selWord(word,skipSM2=false){
   if(!word||!W[word])return;  // 加这行防止空白单词
   CW=word;APP_MODE='learn';
-  // 保存当前单词到localStorage
-  localStorage.setItem('last_word', word);
   document.querySelectorAll('.wi').forEach(el=>el.classList.toggle('act',el.dataset.w===word));
   if(!CARDS[word]){
     CARDS[word]=[];
@@ -1520,32 +1159,9 @@ async function selWord(word,skipSM2=false){
   }
   renderMainFixed(word);renderScrollArea(word);closeSB();
   setTxt('mb-wnm',word);setTxt('mb-wlbl','当前单词');
-  if(!skipSM2){checkDates();updProgress();}
+  if(!skipSM2){checkDates();sm2Init(word);updProgress();}
   [...AS].forEach(src=>searchAndAppend(word,src,MAX));
 }
-
-// 标记单词为已学习
-function markWordAsLearned(word){
-  if(!word) return;
-  
-  // 检查是否已经在复习列表中
-  if(!SM2[word]){
-    sm2Init(word);
-    // 加入今日学习列表
-    checkDates();
-    if(!LEARN_TRACK.learnedToday.includes(word)){
-      LEARN_TRACK.learnedToday.push(word);
-      saveLearnTrack();
-    }
-    updProgress();
-    updDot(word);      // 更新左侧单词列表的点
-    renderSB();        // 刷新侧边栏
-    alert('✓ 单词已标记为已学习！');
-  } else {
-    alert('该单词已在复习列表中');
-  }
-}
-
 async function searchAndAppend(word,src,count){
   const fetcher=FETCHERS[src];if(!fetcher||!AS.has(src))return;
   const existing=(CARDS[word]||[]).filter(c=>(c.art||c).source===src||(src==='wiki'&&(c.art||c).source==='wikimedia')).length;
@@ -2051,125 +1667,22 @@ document.addEventListener('keydown',e=>{
 });
 
 // ═══ INIT ══════════════════════════════════════════════
-// 初始化模式UI
-updateModeUI();
 if(location.protocol==='file:')document.getElementById('warn-banner').style.display='flex';
 loadFBLocal();loadSM2();loadLearnTrack();loadRevTrack();loadSettings();loadFilters();checkDates();
 // Restore saved word data
-// 恢复保存的单词数据
 if(loadWordData()&&Object.keys(W).length>0){
   renderSB();updProgress();
-  
-  // 恢复上次打开的单词
-  const lastWord = localStorage.getItem('last_word');
-  if(lastWord && W[lastWord]){
-    selWord(lastWord);
-  } else {
-    // 如果上次的单词不存在，选择第一个
-    const first=sortWords(Object.keys(W))[0];
-    if(first)selWord(first);
-  }
-} else {
-  updProgress();
-}
+  // Auto-select first word if nothing selected
+  const first=sortWords(Object.keys(W))[0];
+  if(first)selWord(first);
+}else updProgress();
 
 document.getElementById('fi-words').addEventListener('change',e=>{if(e.target.files[0])loadWordFile(e.target.files[0]);e.target.value='';});
 document.getElementById('fi-fb').addEventListener('change',e=>{if(e.target.files[0])loadFBFile(e.target.files[0]);e.target.value='';});
 document.getElementById('sb-inp').addEventListener('input',e=>{SQ=e.target.value;renderSB();});
-document.getElementById('sb-inp').addEventListener('keypress',e=>{
-  if(e.key === 'Enter'){
-    searchWord();
-  }
-});
 document.addEventListener('click',e=>{const m=document.getElementById('settings-menu');const w=document.getElementById('settings-wrap');if(m?.classList.contains('open')&&!w?.contains(e.target))closeSettingsMenu();});
 document.getElementById('rej-modal').addEventListener('click',e=>{if(e.target===document.getElementById('rej-modal'))closeRejModal();});
 registerSW();
-// 更新日志配置 - 方便修改
-const CHANGELOGS = [
-  {
-    version: 'alpha.2.0',
-    date: '2025-03-21',
-    title: '重大更新',
-    items: [
-      '1-在顺序、随机外新增学习模式：智能过滤已学单词，专注新词学习',
-      '2-学习完成判定优化：选择3张图片+写说明才算完成',
-      '3-无图片时可手动标记为已学习',
-      '4-完成每日目标后自动提醒导出进度',
-      '5-搜索框增强：支持手动添加单词、全部展开/收起',
-      '6-新增了更多说明，如关于学习进度判断的提示文字',
-      '7-用户退出重进后，改为打开用户上次退出时所在的单词的页面，而不是单词列表的第一个。',
-      '8-在单词列表的“每日学习”和“复习序列”中间加了一个今日复习的部分。',
-      '9-新增调试功能，在设置每日目标单词的输入框里输入“清除数据”后，可清空所有保存过的数据。'
-    ]
-  },
-  {
-    version: 'alpha.1.0',
-    date: '2025-03-18',
-    title: 'Anki支持与界面优化',
-    items: [
-      '📦 支持导入Anki的.apkg文件',
-      '🎨 优化了界面细节',
-      '🐛 修复了若干bug'
-    ],
-    collapsed: true  // 旧版本默认折叠
-  }
-];
-
-// 显示更新日志
-function showChangelog(){
-  const modal = document.getElementById('changelog-modal');
-  const content = document.getElementById('changelog-content');
-  
-  let html = '';
-  CHANGELOGS.forEach((log, index) => {
-    const id = `changelog-${index}`;
-    html += `
-      <div style="margin-bottom:20px;border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;">
-        <div onclick="toggleChangelogItem('${id}')" style="padding:12px;background:var(--surface2);cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <strong style="color:var(--info);">v${log.version}</strong>
-            <span style="color:var(--tx3);font-size:11px;margin-left:8px;">${log.date}</span>
-            <div style="margin-top:4px;font-size:13px;">${log.title}</div>
-          </div>
-          <span id="${id}-arrow" style="transform:rotate(${log.collapsed ? -90 : 0}deg);transition:transform 0.2s;">▼</span>
-        </div>
-        <div id="${id}" style="display:${log.collapsed ? 'none' : 'block'};padding:12px;font-size:13px;line-height:1.8;">
-          ${log.items.map(item => `<div style="margin:4px 0;">• ${item}</div>`).join('')}
-        </div>
-      </div>
-    `;
-  });
-  
-  content.innerHTML = html;
-  modal.style.display = 'flex';
-}
-
-function closeChangelog(){
-  document.getElementById('changelog-modal').style.display = 'none';
-  localStorage.setItem('last_seen_version', CHANGELOGS[0].version);
-}
-
-function toggleChangelogItem(id){
-  const item = document.getElementById(id);
-  const arrow = document.getElementById(id + '-arrow');
-  const isHidden = item.style.display === 'none';
-  item.style.display = isHidden ? 'block' : 'none';
-  arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(-90deg)';
-}
-
-// 检查是否需要显示更新说明
-function checkForUpdates(){
-  const lastSeenVersion = localStorage.getItem('last_seen_version');
-  const latestVersion = CHANGELOGS[0].version;
-  
-  if(!lastSeenVersion || lastSeenVersion !== latestVersion){
-    setTimeout(() => showChangelog(), 1000);
-  }
-}
-
-// 在页面加载完成后调用
-// 放在init部分
-checkForUpdates();
 </script>
 </body>
 </html>
