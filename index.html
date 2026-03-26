@@ -11,6 +11,7 @@
 <!-- 本地库文件 -->
 <script src="libs/jszip.min.js"></script>
 <script src="libs/sql-asm.js"></script>
+<script src="libs/lz-string.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -59,7 +60,7 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
 #warn-banner{display:none;align-items:center;gap:10px;padding:7px 14px;background:var(--warn-bg);border-bottom:1px solid var(--warn-bd);font-size:12px;color:var(--warn);flex-shrink:0}
 .warn-close{margin-left:auto;background:none;border:none;color:var(--warn);font-size:16px;line-height:1;padding:0 2px}
 /* loading overlay for apkg processing */
-#loading-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center}
+#loading-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:3000;align-items:center;justify-content:center}
 #loading-content{background:var(--surface);padding:24px 32px;border-radius:var(--rl);text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
 #loading-text{font-size:14px;color:var(--tx);margin-bottom:12px}
 #loading-spinner{width:32px;height:32px;border:3px solid var(--bd);border-top-color:var(--info);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto}
@@ -81,7 +82,7 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
 .rb-fg{position:absolute;left:0;top:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-between;padding:5px 8px;color:#fff;z-index:2;pointer-events:none;clip-path:inset(0 100% 0 0);transition:clip-path .4s;font-size:12px;font-weight:500}
 .rb-ct{font-size:11px;font-family:'JetBrains Mono',monospace}
 #sb-mode{display:flex;border-bottom:1px solid var(--bd);flex-shrink:0}
-.sbm-btn{flex:1;padding:5px 0;font-size:11px;border:none;background:transparent;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer}
+.sbm-btn{flex:1;padding:5px 0;font-size:11px;border:none;background:transparent;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer;transition:all 0.1s}
 .sbm-btn.act{color:var(--info);border-bottom-color:var(--info)}
 #sb-search{padding:8px;border-bottom:1px solid var(--bd);flex-shrink:0}
 #sb-search input{width:100%;padding:5px 8px;font-size:12px;border:1px solid var(--bd);border-radius:var(--r);background:var(--surface2);color:var(--tx)}
@@ -271,7 +272,7 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
   .mb-ntxt{font-size:14px;color:var(--tx2);line-height:1}
   .mb-mtxt{font-size:10px;color:var(--tx3);line-height:1;text-align:center}
   #main{padding-bottom: calc(135px + env(safe-area-inset-bottom));}
-  /* 1. 解除高度锁定，恢复页面的原生滚动（触发浏览器隐藏工具栏的关键） */
+  /* 1. 解除高度锁定，恢复页面的原生滚动 */
   body {
     height: auto !important;
     overflow: visible !important;
@@ -294,18 +295,18 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
   #tb {
     position: sticky !important;
     top: 0;
-    z-index: 120 !important; /* 确保悬浮在最上层 */
+    z-index: 120 !important;
   }
   #main-fixed {
     position: sticky !important;
-    top: 44px; /* 紧贴在 #tb (高44px) 的下方 */
+    top: 44px;
     z-index: 105;
-    background: rgba(255, 255, 255, 0.95) !important; /* 滚动时增加一点半透明质感，可选 */
+    background: rgba(255, 255, 255, 0.95) !important;
     backdrop-filter: blur(8px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03); /* 滚动时增加一点阴影与正文区分 */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
   }
 
-  /* 4. 修复复习完成的遮罩层（因为页面变长了，需由 absolute 改为 fixed 保证始终在视口中间可见） */
+  /* 4. 修复复习完成的遮罩层 */
   #review-done-overlay {
     position: fixed !important;
   }
@@ -333,15 +334,15 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
     <span id="tb-learn-txt">—</span>
   </div>
   <div id="tb-right">
-    <button class="btn" onclick="document.getElementById('fi-words').click()">加载词库</button>
+    <button class="btn" onclick="openLibMgr()">管理词库</button>
     <div id="settings-wrap">
       <button class="btn" onclick="toggleSettingsMenu()">⚙</button>
       <div id="settings-menu">
         <div class="sm-item" onclick="openSettingsPanel()">⚙ 设置选项</div>
         <div class="sm-item" onclick="showChangelog();closeSettingsMenu();">📢 查看更新说明</div>
         <div class="sm-sep"></div>
-        <div class="sm-item" onclick="document.getElementById('fi-fb').click();closeSettingsMenu()">📂 导入成果</div>
-        <div class="sm-item" onclick="exportFB();closeSettingsMenu()">💾 导出成果</div>
+        <div class="sm-item" onclick="startLocalScan();closeSettingsMenu()">🔍 扫描本地词库</div>
+        <div class="sm-item" onclick="openLibMgr();closeSettingsMenu()">📂 导入/导出成果</div>
       </div>
     </div>
   </div>
@@ -397,8 +398,125 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
 <!-- Loading overlay -->
 <div id="loading-overlay">
   <div id="loading-content">
-    <div id="loading-text">正在解析Anki文件...</div>
+    <div id="loading-text">正在解析文件...</div>
     <div id="loading-spinner"></div>
+  </div>
+</div>
+
+<!-- Lib Mgr Modal -->
+<div id="lib-mgr-modal" style="display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0.4); align-items:center; justify-content:center; padding:12px;">
+  <div style="background:var(--bg); width:100%; max-width:600px; height:100%; max-height:85vh; display:flex; flex-direction:column; border-radius:12px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+    
+    <!-- Header -->
+    <div style="height:48px; display:flex; align-items:center; justify-content:space-between; padding:0 16px; border-bottom:1px solid var(--bd); background:var(--surface); flex-shrink:0;">
+      <div style="font-size:16px; font-weight:600;">管理数据</div>
+      <button class="btn" style="border:none; background:none; font-size:20px; color:var(--tx3); padding:0; line-height:1;" onclick="closeLibMgr()">×</button>
+    </div>
+    
+    <!-- Tabs -->
+    <div style="display:flex; border-bottom:1px solid var(--bd); background:var(--surface); flex-shrink:0;">
+      <button id="tab-lib" class="sbm-btn act" onclick="switchMgrTab('lib')" style="flex:1; padding:12px 0; font-size:14px; font-weight:500;">词库</button>
+      <button id="tab-fb" class="sbm-btn" onclick="switchMgrTab('fb')" style="flex:1; padding:12px 0; font-size:14px; font-weight:500;">成果</button>
+    </div>
+    
+    <!-- Toolbar -->
+    <div style="display:flex; padding:10px 16px; gap:8px; border-bottom:1px solid var(--bd); background:var(--surface2); flex-shrink:0; overflow-x:auto;">
+      <button class="btn" onclick="mgrImport()">导入</button>
+      <button class="btn" onclick="mgrExport()">导出</button>
+      <button class="btn" style="border-color:var(--info); color:var(--info);" onclick="mgrSwitch()">切换</button>
+      <button class="btn" onclick="mgrRename()">改名</button>
+      <button class="btn" style="color:var(--no); border-color:var(--no-bd); margin-left:auto;" onclick="mgrDelete()">删除</button>
+    </div>
+    
+    <!-- Built-in Area -->
+    <div style="padding:12px 16px; border-bottom:1px solid var(--bd); background:var(--surface); flex-shrink:0; display:flex; align-items:center; justify-content:space-between;">
+      <div style="font-size:13px; color:var(--tx2);">四级英语单词（无需代理）</div>
+      <button class="btn" style="background:var(--info); color:#fff; border:none;" onclick="loadBuiltinCET4()">一键加载</button>
+    </div>
+    
+    <!-- List Area -->
+    <div id="mgr-list" style="flex:1; overflow-y:auto; padding:12px 16px; display:flex; flex-direction:column; gap:10px;">
+      <!-- Items go here -->
+    </div>
+  </div>
+</div>
+
+<!-- 新增：选择扫描方式 Modal -->
+<div id="scan-choice-modal" style="display:none; position:fixed; inset:0; z-index:3000; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; padding:12px;">
+  <div style="background:var(--surface); width:100%; max-width:320px; display:flex; flex-direction:column; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.2); overflow:hidden;">
+    <div style="padding:16px; border-bottom:1px solid var(--bd); font-size:16px; font-weight:600; text-align:center;">
+      扫描本地词库
+    </div>
+    <div style="padding:20px; display:flex; flex-direction:column; gap:16px;">
+      
+      <!-- 扫描范围选择 -->
+      <div>
+        <div style="font-size:13px; font-weight:600; color:var(--tx2); margin-bottom:8px;">扫描范围</div>
+        <label style="display:flex; align-items:center; gap:8px; margin-bottom:10px; cursor:pointer; font-size:14px;">
+          <input type="radio" name="scanMode" value="folder" checked style="width:16px; height:16px;"> 
+          <span>扫描指定文件夹</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px;">
+          <input type="radio" name="scanMode" value="full" style="width:16px; height:16px;"> 
+          <span>全盘扫描 <span style="font-size:12px; color:var(--tx3);">(需授权)</span></span>
+        </label>
+      </div>
+
+      <!-- 文件类型过滤 -->
+      <div>
+        <div style="font-size:13px; font-weight:600; color:var(--tx2); margin-bottom:8px;">文件类型</div>
+        <div style="display:flex; gap:16px; font-size:14px;">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" class="scan-type-cb" value=".json" checked> JSON
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" class="scan-type-cb" value=".apkg" checked> APKG
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" class="scan-type-cb" value=".txt"> TXT
+          </label>
+        </div>
+      </div>
+
+    </div>
+    <!-- 底部按钮 -->
+    <div style="padding:12px 16px; border-top:1px solid var(--bd); display:flex; justify-content:flex-end; gap:12px;">
+      <button class="btn" style="border:none; background:transparent;" onclick="document.getElementById('scan-choice-modal').style.display='none'">取消</button>
+      <button class="btn" style="background:var(--info); color:#fff; border:none; padding:6px 16px;" onclick="confirmStartScan()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 扫描本地词库结果 Modal -->
+<div id="scan-modal" style="display:none; position:fixed; inset:0; z-index:3000; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; padding:12px;">
+  <div style="background:var(--surface); width:100%; max-width:500px; max-height:85vh; display:flex; flex-direction:column; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+    
+    <!-- 头部 -->
+    <div style="padding:14px 16px; border-bottom:1px solid var(--bd); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+      <span style="font-size:15px; font-weight:600;">选择要导入的词库</span>
+      <button style="background:none; border:none; font-size:20px; color:var(--tx3); cursor:pointer;" onclick="closeScanModal()">×</button>
+    </div>
+    
+    <!-- 新增：分类过滤栏 -->
+    <div style="padding:8px 16px; border-bottom:1px solid var(--bd); background:var(--surface2); display:flex; gap:8px; flex-shrink:0; overflow-x:auto;">
+      <button class="btn scan-flt-btn" id="flt-all" onclick="filterScanList('all')" style="border-color:var(--info); color:var(--info);">全部</button>
+      <button class="btn scan-flt-btn" id="flt-json" onclick="filterScanList('.json')">JSON</button>
+      <button class="btn scan-flt-btn" id="flt-apkg" onclick="filterScanList('.apkg')">APKG</button>
+      <button class="btn scan-flt-btn" id="flt-txt" onclick="filterScanList('.txt')">TXT</button>
+    </div>
+
+    <!-- 列表区 -->
+    <div id="scan-list" style="flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:8px;">
+      <!-- 列表项插入这里 -->
+    </div>
+    
+    <!-- 底部操作区 -->
+    <div style="padding:12px 16px; border-top:1px solid var(--bd); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+      <label style="font-size:13px; display:flex; align-items:center; gap:6px; cursor:pointer;">
+        <input type="checkbox" id="scan-check-all" onchange="toggleScanAll(this.checked)"> 当前视图全选
+      </label>
+      <button class="btn" style="background:var(--info); color:#fff; border:none; padding:6px 16px;" onclick="importSelectedFiles()">导入已勾选 (<span id="scan-sel-count">0</span>)</button>
+    </div>
   </div>
 </div>
 
@@ -444,14 +562,14 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
         <button class="btn" onclick="setSortOrder('original')" title="原始顺序" style="padding:2px 6px;font-size:11px;">↺</button>
       </div>
     </div>
-    <div id="sb-list"><div class="sb-empty">加载 JSON 或 TXT<br>词库文件即可开始</div></div>
+    <div id="sb-list"><div class="sb-empty">点击右上角“管理词库”<br>导入数据即可开始</div></div>
   </aside>
   <div id="main-wrap">
     <button id="sb-expand-tab" onclick="expandSB()">▶</button>
     <div id="main-fixed"></div>
     <div id="main">
-      <div id="main-empty">⬉点击屏幕左上角“WordArt”查看使用说明<br>从右上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件 ⬈<br>⬅ 从左侧"选择单词"开始</div>
-      <div id="main-empty-mobile">⬉点击屏幕左上角“WordArt”查看使用说明<br>从右上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件⬈<br><br>⬇ 从下方"选择单词"开始</div>
+      <div id="main-empty">⬉点击屏幕左上角“WordArt”查看使用说明<br>从右上方"管理词库"选择导入词库文件 ⬈<br>⬅ 从左侧"选择单词"开始</div>
+      <div id="main-empty-mobile">⬉点击屏幕左上角“WordArt”查看使用说明<br>从右上方"管理词库"选择导入词库文件⬈<br><br>⬇ 从下方"选择单词"开始</div>
             
     </div>
     <div id="review-done-overlay" onclick="exitReviewDone()">
@@ -484,6 +602,70 @@ input,textarea,button,select{font-family:inherit}button{cursor:pointer}
 <input type="file" id="fi-fb" accept=".json" style="display:none">
 
 <script>
+
+  // 🌟 核心修复：自动拦截 LocalStorage，破解 5MB 限制
+// ═══ 1. 全域存储拦截器 (必须放在所有逻辑最前面) ═══
+(function() {
+    const originalSet = Storage.prototype.setItem;
+    const originalGet = Storage.prototype.getItem;
+    const originalRemove = Storage.prototype.removeItem;
+
+    const isBigData = (key) => {
+        return key.startsWith('waf8_lib_') ||
+               key.startsWith('waf8_fb_') ||
+               key === 'waf8_words' ||
+               key === 'waf8_fb';
+    };
+
+    // 拦截 保存 动作
+    Storage.prototype.setItem = function(key, value) {
+        if (isBigData(key)) {
+            if (window.AndroidNativeStorage) {
+                // App 环境
+                console.log(`[Native Storage] 正在存入硬盘: ${key}`);
+                window.AndroidNativeStorage.setItem(key, value);
+                return; 
+            } else {
+                // 网页环境
+                const start = value.length;
+                const compressed = LZString.compressToUTF16(value);
+                const end = compressed.length;
+                
+                // 🌟 这一行会打印压缩效果
+                console.log(`[LZ-String] 键名: ${key} | 原始: ${start} | 压缩后: ${end} | 节省: ${Math.round((1 - end/start) * 100)}%`);
+                
+                return originalSet.call(this, key, compressed);
+            }
+        }
+        return originalSet.call(this, key, value);
+    };
+
+    // 拦截 读取 动作
+    Storage.prototype.getItem = function(key) {
+        if (isBigData(key)) {
+            if (window.AndroidNativeStorage) {
+                // App 环境：从安卓硬盘取
+                return window.AndroidNativeStorage.getItem(key);
+            } else {
+                // 网页环境：取出来后自动解压
+                const val = originalGet.call(this, key);
+                if (!val) return null;
+                const decompressed = LZString.decompressFromUTF16(val);
+                return decompressed || val; // 解压失败说明是旧的明文数据
+            }
+        }
+        return originalGet.call(this, key);
+    };
+
+    // 拦截 删除 动作
+    Storage.prototype.removeItem = function(key) {
+        if (isBigData(key) && window.AndroidNativeStorage) {
+            window.AndroidNativeStorage.removeItem(key);
+        }
+        return originalRemove.call(this, key);
+    };
+})();
+// 🌟 拦截逻辑结束
 // ═══ CONSTANTS ════════════════════════════════════════
 const PROXY_URL='https://corsproxy.io/?url=';
 // Source display order: wikipedia first, wikimedia last
@@ -515,6 +697,278 @@ let SM2={},LEARN_TRACK={date:'',learnedToday:[]},REVIEW_TRACK={date:'',reviewedT
 let REVIEW_QUEUE=[],REVIEW_IDX=0,PRE_REVIEW_WORD=null;
 let SORT_ORDER = 'alpha';  // 'alpha', 'original'
 let ALL_COLLAPSED = false;
+
+// ═══ LIBRARY MANAGER STATE ════════════════════════════
+let WAF_LIBS = [];
+let WAF_FBS = [];
+let CURRENT_LIB_ID = null;
+let CURRENT_FB_ID = null;
+let MGR_TAB = 'lib'; // 'lib' or 'fb'
+let MGR_SEL_ID = null;
+
+function initLibsMgr(){
+  try{ WAF_LIBS = JSON.parse(localStorage.getItem('waf8_libs')||'[]'); }catch{}
+  try{ WAF_FBS = JSON.parse(localStorage.getItem('waf8_fbs')||'[]'); }catch{}
+  CURRENT_LIB_ID = localStorage.getItem('waf8_current_lib_id');
+  CURRENT_FB_ID = localStorage.getItem('waf8_current_fb_id');
+  
+  if(WAF_LIBS.length === 0 && localStorage.getItem(LS.WORDS)){
+     const id = 'lib_' + Date.now();
+     const dataStr = localStorage.getItem(LS.WORDS);
+     const count = Object.keys(JSON.parse(dataStr)).length;
+     if(count > 0){
+        WAF_LIBS.push({id, name: '默认词库', count, size: dataStr.length, ts: Date.now()});
+        localStorage.setItem('waf8_lib_' + id, dataStr);
+        CURRENT_LIB_ID = id;
+        saveLibsMeta();
+     }
+  }
+  if(WAF_FBS.length === 0 && localStorage.getItem(LS.FB)){
+     const id = 'fb_' + Date.now();
+     const dataStr = localStorage.getItem(LS.FB);
+     const count = Object.keys(JSON.parse(dataStr)).length;
+     if(count > 0){
+        WAF_FBS.push({id, name: '默认成果', count, size: dataStr.length, ts: Date.now()});
+        localStorage.setItem('waf8_fb_' + id, dataStr);
+        CURRENT_FB_ID = id;
+        saveFbsMeta();
+     }
+  }
+}
+function saveLibsMeta(){ localStorage.setItem('waf8_libs', JSON.stringify(WAF_LIBS)); localStorage.setItem('waf8_current_lib_id', CURRENT_LIB_ID||''); }
+function saveFbsMeta(){ localStorage.setItem('waf8_fbs', JSON.stringify(WAF_FBS)); localStorage.setItem('waf8_current_fb_id', CURRENT_FB_ID||''); }
+
+function openLibMgr(){
+  document.getElementById('lib-mgr-modal').style.display = 'flex';
+  renderMgrList();
+}
+function closeLibMgr(){
+  document.getElementById('lib-mgr-modal').style.display = 'none';
+}
+function switchMgrTab(tab){
+  MGR_TAB = tab;
+  MGR_SEL_ID = null;
+  document.getElementById('tab-lib').classList.toggle('act', tab === 'lib');
+  document.getElementById('tab-fb').classList.toggle('act', tab === 'fb');
+  renderMgrList();
+}
+function renderMgrList(){
+  const listEl = document.getElementById('mgr-list');
+  const arr = MGR_TAB === 'lib' ? WAF_LIBS : WAF_FBS;
+  const currentId = MGR_TAB === 'lib' ? CURRENT_LIB_ID : CURRENT_FB_ID;
+  
+  if(arr.length === 0){
+    listEl.innerHTML = `<div class="sb-empty" style="margin-top:20px;">暂无数据，请导入</div>`;
+    return;
+  }
+  
+  listEl.innerHTML = arr.map(item => {
+    const isSel = MGR_SEL_ID === item.id;
+    const isCur = currentId === item.id;
+    const sizeStr = (item.size / 1024).toFixed(1) + ' KB';
+    const dateStr = new Date(item.ts).toLocaleString();
+    return `
+      <div style="padding:12px; border:1px solid ${isSel ? 'var(--info)' : 'var(--bd)'}; border-radius:var(--r); background:${isSel ? 'var(--info-bg)' : 'var(--surface)'}; cursor:pointer; transition:all 0.1s;" onclick="selectMgrItem('${item.id}')">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <div style="font-size:14px; font-weight:600; color:${isCur ? 'var(--ok)' : 'var(--tx)'};">
+            ${isCur ? '✓ ' : ''}${esc(item.name)}
+          </div>
+          <div style="font-size:12px; font-family:'JetBrains Mono',monospace; color:var(--tx3);">${sizeStr}</div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:12px; color:var(--tx2);">包含 <span style="font-weight:600;color:var(--tx);">${item.count}</span> 个${MGR_TAB==='lib'?'单词':'条目'}</div>
+          <div style="font-size:11px; color:var(--tx3);">${dateStr}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+function selectMgrItem(id){
+  MGR_SEL_ID = id;
+  renderMgrList();
+}
+function mgrImport(){
+  if(MGR_TAB === 'lib') document.getElementById('fi-words').click();
+  else document.getElementById('fi-fb').click();
+}
+function mgrExport(){
+  if(!MGR_SEL_ID) return alert('请先选中一个项目');
+  if(MGR_TAB === 'lib'){
+    const dataStr = localStorage.getItem('waf8_lib_' + MGR_SEL_ID);
+    if(!dataStr) return alert('数据不存在');
+    const item = WAF_LIBS.find(i=>i.id===MGR_SEL_ID);
+    const blob = new Blob([dataStr], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (item.name.endsWith('.json') || item.name.endsWith('.txt') ? item.name : item.name + '.json');
+    a.click();
+  } else {
+    const dataStr = localStorage.getItem('waf8_fb_' + MGR_SEL_ID);
+    if(!dataStr) return alert('数据不存在');
+    const item = WAF_FBS.find(i=>i.id===MGR_SEL_ID);
+    const rawData = JSON.parse(dataStr);
+    const approved=[],rejected=[],rejIds=[];
+    Object.values(rawData).forEach(f=>{
+      if(!f.status)return;
+      const e={word:f.word,artwork_id:f.id,title:f.title||'',source:f.source||'',image_url:f.image_url||'',page_url:f.page_url||'',note:f.note||'',timestamp:f.ts};
+      if(f.status==='approved')approved.push(e);
+      else if(f.status==='rejected'){rejected.push(e);rejIds.push(f.id);}
+    });
+    const out={exported_at:new Date().toISOString(),stats:{approved:approved.length,rejected:rejected.length},approved,rejected,rejected_ids:rejIds};
+    const blob = new Blob([JSON.stringify(out,null,2)], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = item.name.endsWith('.json') ? item.name : item.name + '.json';
+    a.click();
+  }
+}
+function mgrSwitch(){
+  if(!MGR_SEL_ID) return alert('请先选中一个项目');
+  if(MGR_TAB === 'lib'){
+    if(CURRENT_LIB_ID === MGR_SEL_ID) return alert('该词库已在当前使用中');
+    const dataStr = localStorage.getItem('waf8_lib_' + MGR_SEL_ID);
+    if(!dataStr) return alert('数据读取失败');
+    try{
+      W = JSON.parse(dataStr);
+      CURRENT_LIB_ID = MGR_SEL_ID;
+      localStorage.setItem(LS.WORDS, dataStr);
+      saveLibsMeta();
+      CARDS={};POOL={};SSTATUS={};
+      renderSB();checkDates();updProgress();
+      const first=sortWords(Object.keys(W))[0];
+      if(first)selWord(first);
+      else resetMain();
+      alert('已切换至选中的词库');
+      renderMgrList();
+    }catch(e){ alert('解析词库数据失败'); }
+  } else {
+    if(CURRENT_FB_ID === MGR_SEL_ID) return alert('该成果已在当前使用中');
+    const dataStr = localStorage.getItem('waf8_fb_' + MGR_SEL_ID);
+    if(!dataStr) return alert('数据读取失败');
+    try{
+      FB = JSON.parse(dataStr);
+      CURRENT_FB_ID = MGR_SEL_ID;
+      localStorage.setItem(LS.FB, dataStr);
+      saveFbsMeta();
+      renderSB();
+      if(CW)renderMainFixed(CW, false);
+      alert('已切换至选中的成果');
+      renderMgrList();
+    }catch(e){ alert('解析成果数据失败'); }
+  }
+}
+function mgrRename(){
+  if(!MGR_SEL_ID) return alert('请先选中一个项目');
+  const arr = MGR_TAB === 'lib' ? WAF_LIBS : WAF_FBS;
+  const item = arr.find(i=>i.id===MGR_SEL_ID);
+  const newName = prompt('输入新的名称:', item.name);
+  if(newName && newName.trim() !== ''){
+    item.name = newName.trim();
+    if(MGR_TAB==='lib') saveLibsMeta(); else saveFbsMeta();
+    renderMgrList();
+  }
+}
+function mgrDelete(){
+  if(!MGR_SEL_ID) return alert('请先选中一个项目');
+  const arr = MGR_TAB === 'lib' ? WAF_LIBS : WAF_FBS;
+  const item = arr.find(i=>i.id===MGR_SEL_ID);
+  if(confirm(`确定要删除 ${item.name} 吗？此操作不可恢复。`)){
+    if(MGR_TAB === 'lib'){
+      WAF_LIBS = WAF_LIBS.filter(i=>i.id!==MGR_SEL_ID);
+      localStorage.removeItem('waf8_lib_' + MGR_SEL_ID);
+      if(CURRENT_LIB_ID === MGR_SEL_ID) CURRENT_LIB_ID = null;
+      saveLibsMeta();
+    } else {
+      WAF_FBS = WAF_FBS.filter(i=>i.id!==MGR_SEL_ID);
+      localStorage.removeItem('waf8_fb_' + MGR_SEL_ID);
+      if(CURRENT_FB_ID === MGR_SEL_ID) CURRENT_FB_ID = null;
+      saveFbsMeta();
+    }
+    MGR_SEL_ID = null;
+    renderMgrList();
+  }
+}
+
+async function loadBuiltinCET4(){
+  try{
+    showLoading('正在下载四级英语单词词库...');
+    const res = await fetch('words_cet4only.json');
+    if(!res.ok) throw new Error('找不到 words_cet4only.json 文件');
+    const wordsObj = await res.json();
+    let parsedWords = {};
+    const arr = Array.isArray(wordsObj) ? wordsObj : Object.values(wordsObj);
+    arr.forEach(item=>{if(typeof item==='string')parsedWords[item]={word:item};else if(item.word)parsedWords[item.word]=item;});
+    saveNewLib('四级英语单词', parsedWords);
+    
+    showLoading('正在下载四级英语成果...');
+    const resFb = await fetch('artworks_raw.json');
+    if(!resFb.ok) throw new Error('找不到 artworks_raw.json 文件');
+    const fbRaw = await resFb.json();
+    let newFB = {};
+    if(fbRaw.approved||fbRaw.rejected){
+      const proc=(arrList,status)=>(arrList||[]).forEach(f=>{newFB[fbKey(f.word,f.artwork_id||f.id)]={word:f.word,id:f.artwork_id||f.id,status:f.status||status,note:f.note||'',title:f.title||'',image_url:f.image_url||'',page_url:f.page_url||'',source:f.source||'',ts:f.timestamp||''};});
+      proc(fbRaw.approved,'approved');proc(fbRaw.rejected,'rejected');
+    }else {
+      newFB = Object.assign({}, fbRaw);
+    }
+    saveNewFb('四级英语成果', newFB);
+    
+    hideLoading();
+    alert('已成功加载内置四级英语单词及成果！\n请分别在“词库”和“成果”列表中选中它们并点击“切换”即可使用。');
+  }catch(e){
+    hideLoading();
+    alert('加载内置词库失败：' + e.message + '\n\n请确保 words_cet4only.json 和 artworks_raw.json 存在于同目录下。');
+  }
+}
+
+function saveNewLib(name, wordsObj){
+  try{
+    const id = 'lib_' + Date.now();
+    const dataStr = JSON.stringify(wordsObj);
+    localStorage.setItem('waf8_lib_' + id, dataStr);
+    
+    WAF_LIBS.unshift({ id, name: name, count: Object.keys(wordsObj).length, size: dataStr.length, ts: Date.now() });
+    CURRENT_LIB_ID = id;
+    saveLibsMeta();
+    
+    W = wordsObj;
+    saveWordData();
+    CARDS={};POOL={};SSTATUS={};
+    renderSB();checkDates();updProgress();
+    const first=sortWords(Object.keys(W))[0];
+    if(first)selWord(first);
+    else resetMain();
+    
+    if(document.getElementById('lib-mgr-modal').style.display === 'flex') { MGR_SEL_ID = id; renderMgrList(); }
+  }catch(e){
+    if(e.name === 'QuotaExceededError') alert('存储空间已满，无法导入新词库！请先删除一些旧词库。');
+    else alert('导入失败:' + e.message);
+  }
+}
+
+function saveNewFb(name, fbObj){
+  try{
+    const id = 'fb_' + Date.now();
+    const dataStr = JSON.stringify(fbObj);
+    localStorage.setItem('waf8_fb_' + id, dataStr);
+    
+    WAF_FBS.unshift({ id, name: name, count: Object.keys(fbObj).length, size: dataStr.length, ts: Date.now() });
+    CURRENT_FB_ID = id;
+    saveFbsMeta();
+    
+    FB = fbObj;
+    saveFBLocal();
+    renderSB();
+    if(CW)renderMainFixed(CW, false);
+    
+    if(document.getElementById('lib-mgr-modal').style.display === 'flex') { MGR_SEL_ID = id; renderMgrList(); }
+  }catch(e){
+    if(e.name === 'QuotaExceededError') alert('存储空间已满，无法导入新成果！请先删除一些旧成果。');
+    else alert('导入失败:' + e.message);
+  }
+}
 
 // ═══ UTILS ════════════════════════════════════════════
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -594,8 +1048,69 @@ function checkDates(){
 }
 
 // ═══ PERSISTENCE ══════════════════════════════════════
-function loadFBLocal(){try{FB=JSON.parse(localStorage.getItem(LS.FB)||'{}');}catch{FB={}}}
-function saveFBLocal(){try{localStorage.setItem(LS.FB,JSON.stringify(FB));}catch{}}
+function saveWordData() {
+    try {
+        const str = JSON.stringify(W);
+        // 🌟 拦截器会自动处理：App存硬盘，网页存压缩
+        localStorage.setItem(LS.WORDS, str);
+        
+        if (CURRENT_LIB_ID) {
+            localStorage.setItem('waf8_lib_' + CURRENT_LIB_ID, str);
+            const item = WAF_LIBS.find(i => i.id === CURRENT_LIB_ID);
+            if (item) {
+                item.count = Object.keys(W).length;
+                item.size = str.length; // 记录原始长度
+                saveLibsMeta();
+            }
+        }
+    } catch(e) {
+        console.error("词库保存失败:", e);
+        if(e.name === 'QuotaExceededError') alert('存储空间已满，请删除不用的词库');
+    }
+}
+
+function saveFBLocal() {
+    try {
+        const str = JSON.stringify(FB);
+        // 🌟 拦截器会自动处理
+        localStorage.setItem(LS.FB, str);
+        
+        if (CURRENT_FB_ID) {
+            localStorage.setItem('waf8_fb_' + CURRENT_FB_ID, str);
+            const item = WAF_FBS.find(i => i.id === CURRENT_FB_ID);
+            if (item) {
+                item.count = Object.keys(FB).length;
+                item.size = str.length;
+                saveFbsMeta();
+            }
+        }
+    } catch(e) {
+        console.error("成果保存失败:", e);
+    }
+}
+
+function loadWordData() {
+    try {
+        // 🌟 拦截器会自动处理：App从硬盘读，网页读并解压
+        const d = localStorage.getItem(LS.WORDS);
+        if (d) {
+            W = JSON.parse(d);
+            return Object.keys(W).length > 0;
+        }
+    } catch(e) { console.error("读取词库失败:", e); }
+    return false;
+}
+
+function loadFBLocal() {
+    try {
+        const d = localStorage.getItem(LS.FB);
+        FB = d ? JSON.parse(d) : {};
+    } catch(e) {
+        console.error("读取成果失败:", e);
+        FB = {};
+    }
+}
+
 function fbKey(w,id){return w+'||'+id}
 function setFB(w,id,status,note,artData){
   FB[fbKey(w,id)]={word:w,id,status,note:note||'',...artData,ts:new Date().toISOString()};
@@ -616,8 +1131,6 @@ function loadLearnTrack(){try{LEARN_TRACK=JSON.parse(localStorage.getItem(LS.LEA
 function saveLearnTrack(){try{localStorage.setItem(LS.LEARN,JSON.stringify(LEARN_TRACK));}catch{}}
 function loadRevTrack(){try{REVIEW_TRACK=JSON.parse(localStorage.getItem(LS.REV)||'{}');if(!REVIEW_TRACK.date)REVIEW_TRACK={date:'',reviewedToday:[]};}catch{REVIEW_TRACK={date:'',reviewedToday:[]};}}
 function saveRevTrack(){try{localStorage.setItem(LS.REV,JSON.stringify(REVIEW_TRACK));}catch{}}
-function saveWordData(){try{localStorage.setItem(LS.WORDS,JSON.stringify(W));}catch{}}
-function loadWordData(){try{const d=localStorage.getItem(LS.WORDS);if(d){W=JSON.parse(d);return Object.keys(W).length>0;}}catch{}return false;}
 function loadSettings(){
   try{
     const s=JSON.parse(localStorage.getItem(LS.SET)||'{}');
@@ -722,17 +1235,13 @@ function closeMenuOut(e){if(!document.getElementById('settings-wrap').contains(e
 function closeSettingsMenu(){document.getElementById('settings-menu').classList.remove('open');}
 function openSettingsPanel(){closeSettingsMenu();const p=document.getElementById('settings-panel');p.style.display=p.style.display==='block'?'none':'block';}
 function clearAllData(){
-  if(!confirm('⚠️ 警告：此操作将清除所有数据！\n\n包括：\n• 词库\n• 学习进度\n• 复习记录\n• 图片标注\n\n确定要继续吗？')){
+  if(!confirm('⚠️ 警告：此操作将清除所有数据！\n\n包括：\n• 所有词库与成果记录\n• 学习进度\n• 复习记录\n• 图片标注\n\n确定要继续吗？')){
     return;
   }
-  
   if(!confirm('⚠️ 最后确认：数据无法恢复！\n\n真的要清除所有数据吗？')){
     return;
   }
-  
-  // 清除所有localStorage
   localStorage.clear();
-  
   alert('✓ 所有数据已清除\n\n页面将刷新');
   location.reload();
 }
@@ -813,7 +1322,11 @@ function updProgress(){
       localStorage.setItem('last_export_reminder', today);
       setTimeout(() => {
         if(confirm('🎉 恭喜完成今日学习目标！\n\n建议立即导出进度防止数据丢失。\n\n是否现在导出？')){
-          exportFB();
+          // 触发原本的 mgrExport 逻辑，需要设置一下
+          MGR_TAB = 'fb';
+          MGR_SEL_ID = CURRENT_FB_ID;
+          if(MGR_SEL_ID) mgrExport();
+          else alert('当前没有激活的成果数据。');
         }
       }, 500);
     }
@@ -911,7 +1424,7 @@ function exitReviewDone(){
 function resetMain(){
   const mf=document.getElementById('main-fixed'),mn=document.getElementById('main');
   if(mf)mf.innerHTML='';
-  if(mn)mn.innerHTML='<div id="main-empty">⬉ 点击屏幕左上角“WordArt”查看说明<br>从右上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件⬈<br>⬅ 从左侧选择单词开始</div><div id="main-empty-mobile">⬉ 点击屏幕左上角“WordArt”查看说明<br>从右上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件⬈ <br><br>⬇ 从下方选择单词开始</div>';
+  if(mn)mn.innerHTML='<div id="main-empty">⬉ 点击屏幕左上角“WordArt”查看说明<br>从右上方"管理词库"选择导入词库文件⬈<br>⬅ 从左侧选择单词开始</div><div id="main-empty-mobile">⬉ 点击屏幕左上角“WordArt”查看说明<br>从右上方"管理词库"选择导入词库文件⬈ <br><br>⬇ 从下方选择单词开始</div>';
   CW=null;
 }
 
@@ -1295,7 +1808,7 @@ function renderSB(){
   }
   
   // 后续代码保持不变...
-  if(!allWords.length){document.getElementById('sb-list').innerHTML='<div class="sb-empty">加载 JSON 或 TXT<br>单词文件即可开始</div>';return;}
+  if(!allWords.length){document.getElementById('sb-list').innerHTML='<div class="sb-empty">点击右上角“管理词库”<br>导入数据即可开始</div>';return;}
   const filtered=q?allWords.filter(w=>w.toLowerCase().includes(q)):allWords;
   
   if(SORT_ORDER === 'original'){
@@ -1586,42 +2099,32 @@ function closeSB(){document.getElementById('sb').classList.remove('open');docume
 // ═══ FILE I/O ══════════════════════════════════════════
 function readFile(file,cb){const r=new FileReader();r.onload=e=>cb(e.target.result);r.readAsText(file);}
 function loadWordFile(file){
-  // Check if it's an Anki apkg file
   if(file.name.endsWith('.apkg')){
     loadAnkiFile(file);
     return;
   }
   
-  // Original logic for txt/json files
   readFile(file,text=>{
-    W={};
-    if(file.name.endsWith('.txt')){text.split('\n').map(l=>l.trim()).filter(Boolean).forEach(w=>{W[w]={word:w};});}
-    else{try{const data=JSON.parse(text);const arr=Array.isArray(data)?data:Object.values(data);arr.forEach(item=>{if(typeof item==='string')W[item]={word:item};else if(item.word)W[item.word]=item;});}catch{alert('JSON解析失败');return;}}
-    saveWordData();CARDS={};POOL={};SSTATUS={};
-    renderSB();checkDates();updProgress();
-    const first=sortWords(Object.keys(W))[0];
-    if(first)selWord(first);
-    else resetMain();
+    let words = {};
+    if(file.name.endsWith('.txt')){text.split('\n').map(l=>l.trim()).filter(Boolean).forEach(w=>{words[w]={word:w};});}
+    else{try{const data=JSON.parse(text);const arr=Array.isArray(data)?data:Object.values(data);arr.forEach(item=>{if(typeof item==='string')words[item]={word:item};else if(item.word)words[item.word]=item;});}catch{alert('JSON解析失败');return;}}
+    saveNewLib(file.name, words);
   });
 }
 function loadFBFile(file){
   readFile(file,text=>{
     try{
       const data=JSON.parse(text);
+      let newFB = {};
       if(data.approved||data.rejected){
-        const proc=(arr,status)=>(arr||[]).forEach(f=>{FB[fbKey(f.word,f.artwork_id||f.id)]={word:f.word,id:f.artwork_id||f.id,status:f.status||status,note:f.note||'',title:f.title||'',image_url:f.image_url||'',page_url:f.page_url||'',source:f.source||'',ts:f.timestamp||''};});
+        const proc=(arr,status)=>(arr||[]).forEach(f=>{newFB[fbKey(f.word,f.artwork_id||f.id)]={word:f.word,id:f.artwork_id||f.id,status:f.status||status,note:f.note||'',title:f.title||'',image_url:f.image_url||'',page_url:f.page_url||'',source:f.source||'',ts:f.timestamp||''};});
         proc(data.approved,'approved');proc(data.rejected,'rejected');
-      }else Object.assign(FB,data);
-      saveFBLocal();renderSB();if(CW)renderMainFixed(CW);alert('成果记录已加载');
+      }else newFB = Object.assign({}, data);
+      
+      saveNewFb(file.name, newFB);
+      alert('成果记录已加载');
     }catch{alert('成果文件解析失败');}
   });
-}
-
-function exportFB(){
-  const approved=[],rejected=[],rejIds=[];
-  Object.values(FB).forEach(f=>{if(!f.status)return;const e={word:f.word,artwork_id:f.id,title:f.title||'',source:f.source||'',image_url:f.image_url||'',page_url:f.page_url||'',note:f.note||'',timestamp:f.ts};if(f.status==='approved')approved.push(e);else if(f.status==='rejected'){rejected.push(e);rejIds.push(f.id);}});
-  const out={exported_at:new Date().toISOString(),stats:{approved:approved.length,rejected:rejected.length},approved,rejected,rejected_ids:rejIds};
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));a.download=`wordart_feedback_${new Date().toISOString().slice(0,10)}.json`;a.click();
 }
 
 // ═══ README TOGGLE ═════════════════════════════════════
@@ -1645,7 +2148,7 @@ function toggleReadme(){
     } else {
       // 没有单词，显示空白提示
       main.innerHTML = `
-        <div id="main-empty-mobile">⬉点击屏幕左上角“WordArt”查看说明<br>从右上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件⬈</div>
+        <div id="main-empty-mobile">⬉点击屏幕左上角“WordArt”查看说明<br>从右上方"管理词库"选择导入词库文件⬈</div>
       `;
       if(mainFixed) mainFixed.style.display = 'none';
     }
@@ -1658,12 +2161,12 @@ function toggleReadme(){
     main.innerHTML = `
       <div id="readme-doc" style="display:block;padding:20px 48px;max-width:800px;margin:0 auto;overflow-y:auto;height:100%;">
         <div style="text-align:center;margin-bottom:30px;">
-          <p style="margin-top:10px;font-size:13px;color:var(--tx2);">⬉点击屏幕左上角“WordArt”查看说明<br>从右上方"加载词库"选择 TXT、JSON 或 Anki 的 apkg 文件⬈</p>
+          <p style="margin-top:10px;font-size:13px;color:var(--tx2);">⬉点击屏幕左上角“WordArt”查看说明<br>从右上方"管理词库"选择导入词库文件⬈</p>
         </div>
         
         <div style="text-align:center;margin-bottom:30px;">
           <img src="wxzsm.png" alt="赞赏码" style="max-width:200px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-          <p style="margin-top:10px;font-size:13px;color:var(--tx2);">这里是我的赞赏码😢，我很需要钱🥢，希望大家多多支持🤝</p>
+          <p style="margin:-20px 0 0 0;font-size:13px;color:var(--tx2);">这里是我的赞赏码😢，我很需要钱🥢，希望大家多多支持🤝</p>
         </div>
         
         <p style="text-align:center;margin-bottom:20px;">
@@ -1671,7 +2174,7 @@ function toggleReadme(){
         </p>
         
         <div style="background:var(--info-bg);border:1px solid var(--info-bd);border-radius:var(--rl);padding:14px;margin-bottom:20px;">
-          <p style="margin:0;font-size:13px;color:var(--info);font-weight:500;">✨ 现已支持导入从Anki下载的apkg形式的词库。</br>📲 此外，如果在手机端觉得频繁打开网页很麻烦，你也可以把聚艺保存在本地使用，方法：</br>Chrome：右上角或右下角浏览器设置➡添加到主屏幕</br>FireFox：右上角或右下角浏览器设置➡更多➡添加到主屏幕</br>Edge：右上角或右下角浏览器设置➡添加到此手机</p>
+          <p style="margin:0;font-size:13px;color:var(--info);font-weight:500;">✨ 现已支持导入从Anki下载的apkg形式的词库与多词库切换管理功能。</br>📲 此外，如果在手机端觉得频繁打开网页很麻烦，你也可以把聚艺保存在本地使用，方法：</br>Chrome：右上角或右下角浏览器设置➡添加到主屏幕</br>FireFox：右上角或右下角浏览器设置➡更多➡添加到主屏幕</br>Edge：右上角或右下角浏览器设置➡添加到此手机</p>
         </div>
         
         <div style="background:var(--surface2);border-radius:var(--rl);padding:16px;margin-bottom:20px;">
@@ -1723,6 +2226,7 @@ function toggleReadme(){
           <p style="margin:8px 0;">掌控你的学习材料和进度：</p>
           <ul style="margin:8px 0;padding-left:24px;">
             <li>复制、编辑、迁移、备份</li>
+            <li>多词库自由切换与管理</li>
             <li>导入自定义词库</li>
             <li>随时导出与导入学习进度</li>
           </ul>
@@ -1807,31 +2311,16 @@ function toggleReadme(){
           </ul>
           <p style="margin:8px 0;">如需文章结构（标题 + 正文），使用 <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:12px;">.json</code> 格式。</p>
           
-          <h4 style="font-size:14px;margin:16px 0 8px;color:var(--tx);">2. 导入词库</h4>
-          <p style="margin:8px 0;">导入后，为每个词：</p>
+          <h4 style="font-size:14px;margin:16px 0 8px;color:var(--tx);">2. 导入与管理数据</h4>
+          <p style="margin:8px 0;">点击右上角<strong>管理词库</strong>：</p>
           <ul style="margin:8px 0;padding-left:24px;">
-            <li>标注图像</li>
-            <li>或手动添加图片 URL</li>
-            <li>编写说明</li>
+            <li>在“词库”标签页下导入、切换你的多套词汇表</li>
+            <li>在“成果”标签页下导入、切换你的多套学习成果</li>
+            <li>随时重命名或删除不需要的资源</li>
           </ul>
           
           <h4 style="font-size:14px;margin:16px 0 8px;color:var(--tx);">3. 导出成果</h4>
-          <p style="margin:8px 0;">点击右上角：</p>
-          <p style="margin:8px 0;padding-left:16px;"><strong>设置 → 导出反馈</strong></p>
-          <p style="margin:8px 0;">即可导出你的学习与标注成果。</p>
-          
-          <h4 style="font-size:14px;margin:16px 0 8px;color:var(--tx);">4. 更新词库</h4>
-          <ul style="margin:8px 0;padding-left:24px;">
-            <li>点击"加载单词"导入新词库</li>
-            <li>不影响已有图片与标注</li>
-          </ul>
-          
-          <h4 style="font-size:14px;margin:16px 0 8px;color:var(--tx);">5. 恢复数据</h4>
-          <p style="margin:8px 0;">如标注丢失：</p>
-          <ul style="margin:8px 0;padding-left:24px;">
-            <li>点击"加载反馈"</li>
-            <li>导入之前导出的文件即可恢复</li>
-          </ul>
+          <p style="margin:8px 0;">在<strong>管理词库</strong>面板，选中一项成果，点击<strong>导出</strong>即可导出你的学习与标注成果。</p>
           
           <h3 style="font-size:16px;margin:20px 0 12px;color:var(--tx);">分享方式</h3>
           <p style="margin:12px 0;">你可以将词库分享至任何平台：</p>
@@ -2011,23 +2500,8 @@ async function loadAnkiFile(file){
       return;
     }
     
-    // 加载到应用
-    W = words;
-    saveWordData();
-    CARDS = {};
-    POOL = {};
-    SSTATUS = {};
-    
+    saveNewLib(file.name, words);
     hideLoading();
-    
-    renderSB();
-    checkDates();
-    updProgress();
-    
-    const first = sortWords(Object.keys(W))[0];
-    if(first) selWord(first);
-    else resetMain();
-    
     alert(`成功导入 ${Object.keys(words).length} 个条目！`);
     
   } catch(error) {
@@ -2050,7 +2524,194 @@ document.addEventListener('keydown',e=>{
   if(e.key==='ArrowLeft')navWord(-1);else if(e.key==='ArrowRight')navWord(1);
 });
 
+// ================= 扫描本地词库功能核心代码 =================
+let SCAN_FILES = [];
+
+function startLocalScan() {
+    if (!window.AndroidNativeStorage) {
+        alert("此功能仅在 App 版本中可用！");
+        return;
+    }
+    // 恢复默认选项状态
+    document.querySelector('input[name="scanMode"][value="folder"]').checked = true;
+    document.getElementById('scan-choice-modal').style.display = 'flex';
+}
+
+// 🌟 新增：用户点击“确定”后触发的统筹函数
+function confirmStartScan() {
+    const mode = document.querySelector('input[name="scanMode"]:checked').value;
+    
+    // 获取勾选的文件类型，存入数组
+    const typeCbs = document.querySelectorAll('.scan-type-cb:checked');
+    const types = Array.from(typeCbs).map(cb => cb.value);
+    
+    if (types.length === 0) {
+        alert("请至少勾选一种文件类型！");
+        return;
+    }
+    
+    document.getElementById('scan-choice-modal').style.display = 'none';
+    const typesJsonStr = JSON.stringify(types); // 比如 '["json", "apkg"]'
+
+    if (mode === 'folder') {
+        showLoading('请在弹出的界面中\n直接点击底部的“使用此文件夹”');
+        // 将类型数组传给安卓
+        window.AndroidNativeStorage.scanLocalFiles(typesJsonStr);
+    } else {
+        showLoading('正在全盘检索词库，这可能需要十几秒...\n（首次使用将跳转至设置页请求授权）');
+        // 将类型数组传给安卓
+        window.AndroidNativeStorage.scanFullStorage(typesJsonStr);
+    }
+}
+
+// 接收扫描结果
+window.receiveScanResults = function(jsonStr) {
+    hideLoading();
+    try {
+        SCAN_FILES = JSON.parse(jsonStr);
+        if (SCAN_FILES.length === 0) {
+            alert("未找到符合勾选类型的文件！\n可能是目录下没有，或者被隐藏了。");
+            return;
+        }
+        renderScanList();
+        document.getElementById('scan-modal').style.display = 'flex';
+    } catch(e) {
+        alert("解析扫描结果失败");
+    }
+};
+
+function closeScanModal() { 
+    document.getElementById('scan-modal').style.display = 'none'; 
+}
+
+// 渲染列表时，给每个项目打上 data-ext 扩展名标签
+function renderScanList() {
+    const listEl = document.getElementById('scan-list');
+    listEl.innerHTML = SCAN_FILES.map((f, i) => {
+        const sizeStr = (f.size / 1024 / 1024).toFixed(2) + ' MB';
+        const lowerName = f.name.toLowerCase();
+        
+        let icon = '📄';
+        let ext = '.txt';
+        if (lowerName.endsWith('.apkg')) { icon = '📦'; ext = '.apkg'; }
+        else if (lowerName.endsWith('.json')) { icon = '📄'; ext = '.json'; }
+        
+        // 增加 class="scan-file-item" 和 data-ext 属性用于过滤
+        return `
+        <label class="scan-file-item" data-ext="${ext}" style="display:flex; align-items:center; gap:10px; padding:10px; border:1px solid var(--bd); border-radius:var(--r); cursor:pointer;">
+            <input type="checkbox" class="scan-cb" data-idx="${i}" onchange="updateScanCount()">
+            <div style="font-size:20px; line-height:1;">${icon}</div>
+            <div style="flex:1; min-width:0;">
+                <div style="font-size:13px; font-weight:500; color:var(--tx); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${esc(f.name)}</div>
+                <div style="font-size:11px; color:var(--tx3); margin-top:2px;">${sizeStr}</div>
+            </div>
+        </label>`;
+    }).join('');
+    
+    // 每次重新渲染后，默认重置为显示"全部"
+    filterScanList('all');
+    updateScanCount();
+}
+
+// 🌟 新增：过滤列表视图
+function filterScanList(ext) {
+    // 1. 更新顶部过滤按钮的UI高亮状态
+    const btnIds = {'all': 'flt-all', '.json': 'flt-json', '.apkg': 'flt-apkg', '.txt': 'flt-txt'};
+    document.querySelectorAll('.scan-flt-btn').forEach(btn => {
+        btn.style.borderColor = 'var(--bd2)';
+        btn.style.color = 'var(--tx2)';
+    });
+    const activeBtn = document.getElementById(btnIds[ext]);
+    if (activeBtn) {
+        activeBtn.style.borderColor = 'var(--info)';
+        activeBtn.style.color = 'var(--info)';
+    }
+
+    // 2. 遍历隐藏/显示列表项
+    document.querySelectorAll('.scan-file-item').forEach(item => {
+        if (ext === 'all' || item.dataset.ext === ext) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+
+    // 3. 切换视图时，把“全选”按钮的状态重置为空
+    document.getElementById('scan-check-all').checked = false;
+}
+
+// 🌟 优化：当前视图全选（只勾选当前没被隐藏的项目，保留其他视图已勾选的）
+function toggleScanAll(checked) {
+    document.querySelectorAll('.scan-file-item').forEach(item => {
+        if (item.style.display !== 'none') {
+            item.querySelector('.scan-cb').checked = checked;
+        }
+    });
+    updateScanCount();
+}
+
+// 更新已选中的总数量
+function updateScanCount() {
+    const count = document.querySelectorAll('.scan-cb:checked').length;
+    document.getElementById('scan-sel-count').innerText = count;
+}
+
+async function importSelectedFiles() {
+    const cbs = document.querySelectorAll('.scan-cb:checked');
+    if (cbs.length === 0) return;
+    closeScanModal();
+    
+    for (let i = 0; i < cbs.length; i++) {
+        const fileInfo = SCAN_FILES[parseInt(cbs[i].dataset.idx)];
+        showLoading(`正在准备导入 (${i+1}/${cbs.length}): ${fileInfo.name}...`);
+        
+        // 关键延迟：让浏览器有机会把 Loading UI 渲染出来，防止页面假死
+        await new Promise(r => setTimeout(r, 150)); 
+        
+        try {
+            const virtualUrl = window.AndroidNativeStorage.prepareFileForWeb(fileInfo.uri, fileInfo.name);
+            if (!virtualUrl || virtualUrl.startsWith('ERROR:')) throw new Error(virtualUrl);
+            
+            showLoading(`正在装载解析: ${fileInfo.name}...`);
+            const response = await fetch(virtualUrl);
+            const blob = await response.blob();
+            const fileObj = new File([blob], fileInfo.name, { type: response.headers.get('content-type') || '' });
+            
+            await loadWordFilePromiseWrapper(fileObj);
+        } catch (err) {
+            alert(`导入 ${fileInfo.name} 失败: ${err.message}`);
+        }
+    }
+    hideLoading();
+    alert('批量导入完成！\n请在“管理词库”中查看并切换刚刚导入的数据。');
+}
+
+function loadWordFilePromiseWrapper(file) {
+    return new Promise((resolve, reject) => {
+        if (file.name.endsWith('.apkg')) {
+            loadAnkiFile(file).then(resolve).catch(reject);
+        } else {
+            readFile(file, text => {
+                try {
+                    let words = {};
+                    if(file.name.endsWith('.txt')) {
+                        text.split('\n').map(l=>l.trim()).filter(Boolean).forEach(w=>{words[w]={word:w};});
+                    } else {
+                        const data=JSON.parse(text);
+                        const arr=Array.isArray(data)?data:Object.values(data);
+                        arr.forEach(item=>{if(typeof item==='string')words[item]={word:item};else if(item.word)words[item.word]=item;});
+                    }
+                    saveNewLib(file.name, words);
+                    resolve();
+                } catch(e) { reject(e); }
+            });
+        }
+    });
+}
+
 // ═══ INIT ══════════════════════════════════════════════
+// 初始化数据管理
+initLibsMgr();
 // 初始化模式UI
 updateModeUI();
 if(location.protocol==='file:')document.getElementById('warn-banner').style.display='flex';
@@ -2083,9 +2744,21 @@ document.getElementById('sb-inp').addEventListener('keypress',e=>{
 });
 document.addEventListener('click',e=>{const m=document.getElementById('settings-menu');const w=document.getElementById('settings-wrap');if(m?.classList.contains('open')&&!w?.contains(e.target))closeSettingsMenu();});
 document.getElementById('rej-modal').addEventListener('click',e=>{if(e.target===document.getElementById('rej-modal'))closeRejModal();});
+document.getElementById('lib-mgr-modal').addEventListener('click',e=>{if(e.target===document.getElementById('lib-mgr-modal'))closeLibMgr();});
 registerSW();
 // 更新日志配置 - 方便修改
 const CHANGELOGS = [
+  {
+    version: '1.0.0-beta',
+    date: '2025-03-26',
+    title: '管理词库和apk发布',
+    items: [
+      '1-引入“管理词库”系统，允许导入并在多套词库和成果之间自由切换、改名和删除',
+      '2-增加一键加载“四级英语单词（无需代理）”的内置选项',
+      '3-apk发布：在GitHub发布了apk安装包，方便安卓用户安装使用。下载链接：https://github.com/lamcis/wordart/releases/download/v1.0.0-beta/default.apk',
+      '4-添加了对json的压缩，使用户在网页可以存储更多词库与成果'
+    ]
+  },
   {
     version: 'alpha.2.0',
     date: '2025-03-21',
@@ -2100,7 +2773,8 @@ const CHANGELOGS = [
       '7-用户退出重进后，改为打开用户上次退出时所在的单词的页面，而不是单词列表的第一个。',
       '8-在单词列表的“每日学习”和“复习序列”中间加了一个今日复习的部分。',
       '9-新增调试功能，在设置每日目标单词的输入框里输入“清除数据”后，可清空所有保存过的数据。'
-    ]
+    ],
+    collapsed: true
   },
   {
     version: 'alpha.1.0',
@@ -2166,6 +2840,8 @@ function checkForUpdates(){
     setTimeout(() => showChangelog(), 1000);
   }
 }
+
+
 
 // 在页面加载完成后调用
 // 放在init部分

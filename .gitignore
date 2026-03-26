@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+beifen-index-script
 *.local
 
 # Editor directories and files
